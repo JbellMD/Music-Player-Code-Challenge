@@ -1,6 +1,6 @@
-using music_manager_starter.Shared;
-using Microsoft.AspNetCore.Components.Forms;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components.Forms;
+using music_manager_starter.Shared;
 
 namespace music_manager_starter.Client.Services
 {
@@ -8,8 +8,8 @@ namespace music_manager_starter.Client.Services
     {
         Task<List<Song>> GetSongsAsync(string? search = null);
         Task<Song> GetSongAsync(Guid id);
-        Task<Song> CreateSongAsync(Song song);
-        Task UpdateSongAsync(Song song);
+        Task<Song> AddSongAsync(Song song);
+        Task<Song> UpdateSongAsync(Song song);
         Task DeleteSongAsync(Guid id);
         Task<SongRating> RateSongAsync(Guid songId, SongRating rating);
         Task<string> UploadAlbumArtAsync(Guid songId, IBrowserFile file);
