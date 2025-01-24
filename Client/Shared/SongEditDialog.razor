@@ -29,7 +29,7 @@
                          Required="true" 
                          RequiredError="Genre is required" />
             
-            <MudNumericField T="int" @bind-Value="@Song.Duration" 
+            <MudNumericField T="int" @bind-Value="DurationInSeconds" 
                             Label="Duration (seconds)" 
                             Variant="Variant.Outlined" 
                             Min="0" />
@@ -56,9 +56,18 @@
 @code {
     [Parameter] public Song Song { get; set; } = new();
     [Parameter] public EventCallback<Song> OnSongSaved { get; set; }
+    [CascadingParameter] public MudDialogInstance? MudDialog { get; set; }
+
+    private int DurationInSeconds
+    {
+        get => (int)Song.Duration.TotalSeconds;
+        set => Song.Duration = TimeSpan.FromSeconds(value);
+    }
 
     private async Task Submit()
     {
+        if (MudDialog == null) return;
+
         try
         {
             if (Song.Id == Guid.Empty)
@@ -87,9 +96,13 @@
         }
     }
 
-    private void Cancel() => MudDialog.Cancel();
-
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private void Cancel()
+    {
+        if (MudDialog != null)
+        {
+            MudDialog.Cancel();
+        }
+    }
 
     private async Task OnFileChanged(IBrowserFile file)
     {
