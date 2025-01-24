@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ['dotnet-sdk']
+nixPkgs = ['dotnet-sdk_6']
 aptPkgs = ['libicu-dev']
 
 [phases.build]
@@ -9,4 +9,4 @@ cmds = [
 ]
 
 [start]
-cmd = './Server/bin/Release/net8.0/linux-x64/publish/music-manager-starter.Server'
+cmd = './Server/bin/Release/net6.0/linux-x64/publish/music-manager-starter.Server'

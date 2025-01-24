@@ -6,7 +6,7 @@
     "buildCommand": "dotnet publish -c Release --runtime linux-x64 --self-contained true"
   },
   "deploy": {
-    "startCommand": "./Server/bin/Release/net8.0/linux-x64/publish/music-manager-starter.Server",
+    "startCommand": "./Server/bin/Release/net6.0/linux-x64/publish/music-manager-starter.Server",
     "healthcheckPath": "/",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE"
