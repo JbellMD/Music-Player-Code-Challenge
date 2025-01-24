@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using music_manager_starter.Shared;
 
@@ -13,14 +14,16 @@ namespace music_manager_starter.Client.Services
     public class NotificationService : INotificationService, IAsyncDisposable
     {
         private readonly HubConnection _hubConnection;
+        private readonly NavigationManager _navigationManager;
         private bool _isStarted;
 
         public event Action<Notification>? OnNotificationReceived;
 
         public NotificationService(NavigationManager navigationManager)
         {
+            _navigationManager = navigationManager;
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(navigationManager.ToAbsoluteUri("/notificationHub"))
+                .WithUrl(_navigationManager.ToAbsoluteUri("/notificationHub"))
                 .WithAutomaticReconnect()
                 .Build();
 
