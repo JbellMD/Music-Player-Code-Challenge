@@ -4,17 +4,6 @@ using music_manager_starter.Shared;
 
 namespace music_manager_starter.Client.Services
 {
-    public interface ISongService
-    {
-        Task<List<Song>> GetSongsAsync(string? search = null);
-        Task<Song> GetSongAsync(Guid id);
-        Task<Song> AddSongAsync(Song song);
-        Task<Song> UpdateSongAsync(Song song);
-        Task DeleteSongAsync(Guid id);
-        Task<SongRating> RateSongAsync(Guid songId, SongRating rating);
-        Task<string> UploadAlbumArtAsync(Guid songId, IBrowserFile file);
-    }
-
     public class SongService : ISongService
     {
         private readonly HttpClient _httpClient;
