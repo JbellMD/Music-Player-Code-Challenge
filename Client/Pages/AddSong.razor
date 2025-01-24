@@ -1,4 +1,4 @@
-﻿@page "/AddSong"
+@page "/AddSong"
 @inject HttpClient Http
 @using music_manager_starter.Shared
 
@@ -32,7 +32,7 @@
         <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded">Add Song</button>
     </EditForm>
 
-    @if (message != null)
+    @if (!string.IsNullOrEmpty(message))
     {
         <p class="mt-4 text-green-500">@message</p>
     }
@@ -40,7 +40,7 @@
 
 @code {
     private Song newSong = new Song();
-    private string message;
+    private string? message;
 
     private async Task HandleValidSubmit()
     {

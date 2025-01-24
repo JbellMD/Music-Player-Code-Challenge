@@ -10,7 +10,7 @@
         <MudText Typo="Typo.body2">Genre: @Song.Genre</MudText>
         <MudText Typo="Typo.body2">Duration: @Song.Duration minutes</MudText>
         <MudText Typo="Typo.body2">Release Date: @(Song.ReleaseDate.ToString("d"))</MudText>
-        <MudText Typo="Typo.body2">Rating: @(Song.AverageRating.GetValueOrDefault(0).ToString("F1"))</MudText>
+        <MudText Typo="Typo.body2">Rating: @(Song.AverageRating.ToString("F1"))</MudText>
     </MudCardContent>
     <MudCardActions>
         <MudButton OnClick="@(() => OnPlay.InvokeAsync(Song))" 

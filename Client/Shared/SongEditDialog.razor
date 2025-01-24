@@ -25,7 +25,7 @@
                          Required="true" 
                          RequiredError="Genre is required" />
             
-            <MudNumericField @bind-Value="Song.Duration" 
+            <MudNumericField T="int" @bind-Value="Song.Duration" 
                             Label="Duration (minutes)" 
                             Required="true" 
                             Min="0" 
