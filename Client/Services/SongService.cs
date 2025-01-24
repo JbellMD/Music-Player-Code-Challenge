@@ -40,13 +40,6 @@ namespace music_manager_starter.Client.Services
                 ?? throw new Exception("Song not found");
         }
 
-        public async Task<Song> CreateSongAsync(Song song)
-        {
-            var response = await _httpClient.PostAsJsonAsync("api/songs", song);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Song>() ?? throw new Exception("Failed to create song");
-        }
-
         public async Task<Song> AddSongAsync(Song song)
         {
             var response = await _httpClient.PostAsJsonAsync("api/songs", song);
@@ -54,7 +47,7 @@ namespace music_manager_starter.Client.Services
             return await response.Content.ReadFromJsonAsync<Song>() ?? throw new Exception("Failed to add song");
         }
 
-        public async Task UpdateSongAsync(Song song)
+        public async Task<Song> UpdateSongAsync(Song song)
         {
             var response = await _httpClient.PutAsJsonAsync($"api/songs/{song.Id}", song);
             response.EnsureSuccessStatusCode();
@@ -67,12 +60,6 @@ namespace music_manager_starter.Client.Services
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<SongRating> RateSongAsync(Guid songId, SongRating rating)
-        {
-            return await _httpClient.PostAsJsonAsync<SongRating>($"api/songs/{songId}/rate", rating) 
-                ?? throw new Exception("Failed to rate song");
-        }
-
         public async Task<string> UploadAlbumArtAsync(Guid songId, IBrowserFile file)
         {
             var content = new MultipartFormDataContent();
@@ -80,7 +67,15 @@ namespace music_manager_starter.Client.Services
             content.Add(fileContent, "file", file.Name);
 
             var response = await _httpClient.PostAsync($"api/songs/{songId}/upload-art", content);
-            return response.Content.ReadAsStringAsync().Result ?? throw new Exception("Failed to upload album art");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync() ?? throw new Exception("Failed to upload album art");
+        }
+
+        public async Task<SongRating> RateSongAsync(Guid songId, SongRating rating)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"api/songs/{songId}/rate", rating);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<SongRating>() ?? throw new Exception("Failed to rate song");
         }
     }
 }
