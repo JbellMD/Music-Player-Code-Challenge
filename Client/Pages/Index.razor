@@ -1,92 +1,93 @@
 @page "/"
 @using music_manager_starter.Shared
 @inject ISongService SongService
-@inject IPlaylistService PlaylistService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+<PageTitle>Songs</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h3" Class="mb-4">Songs</MudText>
+
     <MudGrid>
         <MudItem xs="12">
             <MudPaper Class="pa-4">
-                <MudStack Row="true" Justify="Justify.SpaceBetween">
-                    <MudTextField @bind-Value="_searchQuery" 
-                                Label="Search songs" 
-                                Variant="Variant.Outlined"
-                                Adornment="Adornment.Start"
-                                AdornmentIcon="@Icons.Material.Filled.Search"
-                                OnKeyUp="@(async (e) => { if (e.Key == "Enter") await SearchSongs(); })" />
-                    <MudButton Variant="Variant.Filled" 
-                              Color="Color.Primary"
-                              OnClick="AddNewSong">
-                        Add Song
-                    </MudButton>
-                </MudStack>
+                <MudButton OnClick="AddSong" 
+                          Variant="Variant.Filled" 
+                          Color="Color.Primary" 
+                          Class="mb-4">Add Song</MudButton>
+
+                <MudTextField @bind-Value="searchTerm"
+                            Label="Search"
+                            Variant="Variant.Outlined"
+                            Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.Search"
+                            OnKeyUp="@SearchKeyUp"
+                            Class="mb-4" />
+
+                @if (songs == null)
+                {
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                }
+                else
+                {
+                    <MudGrid>
+                        @foreach (var song in songs)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <SongCard Song="song" 
+                                         OnEdit="EditSong"
+                                         OnDelete="DeleteSong"
+                                         OnAddToPlaylist="AddToPlaylist" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
             </MudPaper>
         </MudItem>
-
-        @if (_isLoading)
-        {
-            <MudItem xs="12" Class="d-flex justify-center">
-                <Loading IsLoading="true" />
-            </MudItem>
-        }
-        else
-        {
-            @foreach (var song in _songs)
-            {
-                <MudItem xs="12" sm="6" md="4" lg="3">
-                    <SongCard Song="@song"
-                             OnPlay="@PlaySong"
-                             OnAddToPlaylist="@AddToPlaylist"
-                             OnEdit="@EditSong"
-                             OnDelete="@DeleteSong" />
-                </MudItem>
-            }
-        }
     </MudGrid>
 </MudContainer>
 
 @code {
-    private List<Song> _songs = new();
-    private string _searchQuery = "";
-    private bool _isLoading = true;
+    private List<Song>? songs;
+    private string searchTerm = "";
+    private Timer? searchTimer;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadSongs();
     }
 
-    private async Task LoadSongs()
+    private async Task LoadSongs(string? search = null)
     {
         try
         {
-            _isLoading = true;
-            _songs = await SongService.GetSongsAsync(_searchQuery);
+            songs = await SongService.GetSongsAsync(search);
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error loading songs: {ex.Message}", Severity.Error);
         }
-        finally
-        {
-            _isLoading = false;
-        }
     }
 
-    private async Task SearchSongs()
+    private async Task AddSong()
     {
-        await LoadSongs();
-    }
-
-    private async Task AddNewSong()
-    {
-        var dialog = await DialogService.ShowAsync<SongEditDialog>("Add New Song");
+        var dialog = await DialogService.ShowAsync<SongEditDialog>("Add Song");
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
-            await LoadSongs();
+            var song = (Song)result.Data;
+            try
+            {
+                await SongService.AddSongAsync(song);
+                await LoadSongs();
+                Snackbar.Add("Song added successfully", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error adding song: {ex.Message}", Severity.Error);
+            }
         }
     }
 
@@ -98,19 +99,33 @@
 
         if (!result.Canceled)
         {
-            await LoadSongs();
+            var updatedSong = (Song)result.Data;
+            try
+            {
+                await SongService.UpdateSongAsync(updatedSong);
+                await LoadSongs();
+                Snackbar.Add("Song updated successfully", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error updating song: {ex.Message}", Severity.Error);
+            }
         }
     }
 
     private async Task DeleteSong(Song song)
     {
-        var confirm = await DialogService.ShowMessageBox(
-            "Delete Song",
-            "Are you sure you want to delete this song?",
-            yesText: "Delete",
-            cancelText: "Cancel");
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = "Are you sure you want to delete this song?",
+            ["ButtonText"] = "Delete",
+            ["Color"] = Color.Error
+        };
 
-        if (confirm == true)
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Song", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
         {
             try
             {
@@ -125,34 +140,22 @@
         }
     }
 
-    private async Task PlaySong(Song song)
-    {
-        // TODO: Implement audio playback
-        Snackbar.Add($"Playing {song.Title}", Severity.Info);
-    }
-
     private async Task AddToPlaylist(Song song)
     {
-        var playlists = await PlaylistService.GetPlaylistsAsync();
-        var options = playlists.Select(p => new DialogChoice { Id = p.Id.ToString(), Text = p.Name }).ToArray();
+        // TODO: Implement add to playlist functionality
+        Snackbar.Add("Add to playlist feature coming soon!", Severity.Info);
+    }
 
-        var playlistId = await DialogService.ShowChoices("Add to Playlist", 
-            "Select a playlist", 
-            options,
-            submitText: "Add",
-            cancelText: "Cancel");
-
-        if (!string.IsNullOrEmpty(playlistId))
+    private void SearchKeyUp(KeyboardEventArgs e)
+    {
+        searchTimer?.Dispose();
+        searchTimer = new Timer(async _ =>
         {
-            try
+            await InvokeAsync(async () =>
             {
-                await PlaylistService.AddSongToPlaylistAsync(Guid.Parse(playlistId), song.Id);
-                Snackbar.Add("Song added to playlist", Severity.Success);
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Error adding song to playlist: {ex.Message}", Severity.Error);
-            }
-        }
+                await LoadSongs(searchTerm);
+                StateHasChanged();
+            });
+        }, null, 500, Timeout.Infinite);
     }
 }

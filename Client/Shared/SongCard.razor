@@ -5,16 +5,12 @@
                   Height="200" />
     <MudCardContent>
         <MudText Typo="Typo.h6">@Song.Title</MudText>
-        <MudText Typo="Typo.body2">@Song.Artist</MudText>
+        <MudText Typo="Typo.body2">Artist: @Song.Artist</MudText>
         <MudText Typo="Typo.body2">Album: @Song.Album</MudText>
         <MudText Typo="Typo.body2">Genre: @Song.Genre</MudText>
-        @if (Song.ReleaseDate.HasValue)
-        {
-            <MudText Typo="Typo.body2">Released: @Song.ReleaseDate.Value.ToString("d")</MudText>
-        }
-        <MudRating Value="@((int)Math.Round(Song.AverageRating ?? 0))" 
-                   ReadOnly="true" 
-                   Size="Size.Small" />
+        <MudText Typo="Typo.body2">Duration: @Song.Duration minutes</MudText>
+        <MudText Typo="Typo.body2">Release Date: @(Song.ReleaseDate.ToString("d"))</MudText>
+        <MudText Typo="Typo.body2">Rating: @(Song.AverageRating.GetValueOrDefault(0).ToString("F1"))</MudText>
     </MudCardContent>
     <MudCardActions>
         <MudButton OnClick="@(() => OnPlay.InvokeAsync(Song))" 
@@ -22,11 +18,9 @@
                    Variant="Variant.Text">
             Play
         </MudButton>
-        <MudButton OnClick="@(() => OnAddToPlaylist.InvokeAsync(Song))" 
-                   Color="Color.Secondary" 
-                   Variant="Variant.Text">
-            Add to Playlist
-        </MudButton>
+        <MudButton OnClick="@(() => OnEdit.InvokeAsync(Song))" Color="Color.Primary">Edit</MudButton>
+        <MudButton OnClick="@(() => OnDelete.InvokeAsync(Song))" Color="Color.Error">Delete</MudButton>
+        <MudButton OnClick="@(() => OnAddToPlaylist.InvokeAsync(Song))" Color="Color.Secondary">Add to Playlist</MudButton>
         <MudMenu Icon="@Icons.Material.Filled.MoreVert">
             <MudMenuItem OnClick="@(() => OnEdit.InvokeAsync(Song))">Edit</MudMenuItem>
             <MudMenuItem OnClick="@(() => OnDelete.InvokeAsync(Song))">Delete</MudMenuItem>
@@ -36,17 +30,17 @@
 
 @code {
     [Parameter]
-    public Song Song { get; set; } = default!;
+    public Song Song { get; set; } = null!;
 
     [Parameter]
     public EventCallback<Song> OnPlay { get; set; }
-
-    [Parameter]
-    public EventCallback<Song> OnAddToPlaylist { get; set; }
 
     [Parameter]
     public EventCallback<Song> OnEdit { get; set; }
 
     [Parameter]
     public EventCallback<Song> OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback<Song> OnAddToPlaylist { get; set; }
 }

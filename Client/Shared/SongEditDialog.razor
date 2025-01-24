@@ -16,18 +16,24 @@
                          RequiredError="Artist is required" />
             
             <MudTextField @bind-Value="Song.Album" 
-                         Label="Album" />
+                         Label="Album" 
+                         Required="true" 
+                         RequiredError="Album is required" />
             
             <MudTextField @bind-Value="Song.Genre" 
-                         Label="Genre" />
+                         Label="Genre" 
+                         Required="true" 
+                         RequiredError="Genre is required" />
+            
+            <MudNumericField @bind-Value="Song.Duration" 
+                            Label="Duration (minutes)" 
+                            Required="true" 
+                            Min="0" 
+                            RequiredError="Duration is required" />
             
             <MudDatePicker @bind-Date="Song.ReleaseDate" 
                           Label="Release Date" />
             
-            <MudNumericField @bind-Value="Song.Duration" 
-                            Label="Duration (seconds)" 
-                            Min="0" />
-
             <MudFileUpload T="IBrowserFile" FilesChanged="OnFileChanged">
                 <ButtonTemplate>
                     <MudButton HtmlTag="label"
