@@ -1,21 +1,33 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-<div class="flex h-screen">
-    <NavMenu />
-    <div class="flex-1 flex flex-col bg-gray-800 md:ml-64 transition-all duration-300">
-        <div class="top-bar px-6 py-4 bg-gray-900 text-white flex items-center justify-between">
-            <h1 class="text-xl font-semibold">Music</h1>
-            <div class="relative">
-                <input type="text" placeholder="Search..." class="bg-gray-700 text-white px-4 py-2 rounded-full focus:outline-none">
-                <span class="absolute right-3 top-3 text-gray-400">
-                    <i class="fas fa-search"></i>
-                </span>
-            </div>
-        </div>
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6" Class="ml-4">Music Manager</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" OnClick="@(() => _showNotifications = true)" />
+    </MudAppBar>
 
-        <div class="p-0 overflow-y-auto flex-1">
-            @Body
-        </div>
-    </div>
-</div>
+    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent>
+        <NotificationList @bind-IsOpen="_showNotifications" />
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _showNotifications;
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}

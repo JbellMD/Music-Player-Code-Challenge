@@ -1,0 +1,128 @@
+@using music_manager_starter.Shared
+@inject ISongService SongService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudTextField @bind-Value="Song.Title" 
+                         Label="Title" 
+                         Required="true" 
+                         RequiredError="Title is required" />
+            
+            <MudTextField @bind-Value="Song.Artist" 
+                         Label="Artist" 
+                         Required="true" 
+                         RequiredError="Artist is required" />
+            
+            <MudTextField @bind-Value="Song.Album" 
+                         Label="Album" />
+            
+            <MudTextField @bind-Value="Song.Genre" 
+                         Label="Genre" />
+            
+            <MudDatePicker @bind-Date="Song.ReleaseDate" 
+                          Label="Release Date" />
+            
+            <MudNumericField @bind-Value="Song.Duration" 
+                            Label="Duration (seconds)" 
+                            Min="0" />
+
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnFileChanged">
+                <ButtonTemplate>
+                    <MudButton HtmlTag="label"
+                              Variant="Variant.Filled"
+                              Color="Color.Primary"
+                              StartIcon="@Icons.Material.Filled.CloudUpload"
+                              for="@context">
+                        Upload Album Art
+                    </MudButton>
+                </ButtonTemplate>
+            </MudFileUpload>
+
+            @if (!string.IsNullOrEmpty(Song.AlbumArtUrl))
+            {
+                <MudImage Src="@Song.AlbumArtUrl" 
+                         Alt="Album Art" 
+                         Width="100" 
+                         Class="mt-2" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   OnClick="Submit" 
+                   Disabled="@(!_isValid || _isSubmitting)">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Class="ms-n1" 
+                                   Size="Size.Small" 
+                                   Indeterminate="true" />
+                <MudText Class="ms-2">Saving</MudText>
+            }
+            else
+            {
+                <MudText>Save</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public Song Song { get; set; } = new();
+
+    private MudForm _form = default!;
+    private bool _isValid;
+    private bool _isSubmitting;
+
+    private async Task OnFileChanged(IBrowserFile file)
+    {
+        try
+        {
+            var fileName = await SongService.UploadAlbumArtAsync(Song.Id, file);
+            Song.AlbumArtUrl = fileName;
+            Snackbar.Add("Album art uploaded successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to upload album art: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        if (_isValid)
+        {
+            _isSubmitting = true;
+            try
+            {
+                if (Song.Id == Guid.Empty)
+                {
+                    await SongService.CreateSongAsync(Song);
+                    Snackbar.Add("Song created successfully", Severity.Success);
+                }
+                else
+                {
+                    await SongService.UpdateSongAsync(Song);
+                    Snackbar.Add("Song updated successfully", Severity.Success);
+                }
+                MudDialog.Close(DialogResult.Ok(Song));
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error saving song: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                _isSubmitting = false;
+            }
+        }
+    }
+}

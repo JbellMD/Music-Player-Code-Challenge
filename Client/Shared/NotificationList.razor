@@ -1,0 +1,61 @@
+@using music_manager_starter.Shared
+@implements IDisposable
+@inject INotificationService NotificationService
+
+<MudDrawer @bind-Open="@_isOpen" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Temporary">
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6">Notifications</MudText>
+    </MudDrawerHeader>
+    <MudList Clickable="true">
+        @foreach (var notification in _notifications.OrderByDescending(n => n.CreatedAt))
+        {
+            <MudListItem>
+                <MudStack>
+                    <MudText Typo="Typo.subtitle1">@notification.Title</MudText>
+                    <MudText Typo="Typo.body2">@notification.Message</MudText>
+                    <MudText Typo="Typo.caption">@notification.CreatedAt.ToLocalTime().ToString("g")</MudText>
+                </MudStack>
+            </MudListItem>
+            <MudDivider />
+        }
+    </MudList>
+</MudDrawer>
+
+@code {
+    private bool _isOpen;
+    private List<Notification> _notifications = new();
+
+    [Parameter]
+    public bool IsOpen
+    {
+        get => _isOpen;
+        set
+        {
+            if (_isOpen != value)
+            {
+                _isOpen = value;
+                IsOpenChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        NotificationService.OnNotificationReceived += HandleNotification;
+        await NotificationService.StartAsync();
+    }
+
+    private void HandleNotification(Notification notification)
+    {
+        _notifications.Add(notification);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnNotificationReceived -= HandleNotification;
+    }
+}

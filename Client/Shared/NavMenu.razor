@@ -1,45 +1,14 @@
-﻿<nav class="bg-gray-900 w-64 min-h-screen md:fixed z-50">
-    <div class="flex items-center justify-between px-4 py-6">
-        <h2 class="text-2xl font-semibold text-white">Music Library</h2>
-    </div>
+@using Microsoft.AspNetCore.Components.Routing
+@using MudBlazor
 
-    <div class="px-4">
-        <ul class="space-y-4">
-            <li>
-                <a href="/" class="flex items-center px-4 py-2 text-gray-400 hover:bg-purple-800 hover:text-white transition rounded-lg">
-                    <svg class="w-6 h-6 mr-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-7-7v18" />
-                    </svg>
-                    Library
-                </a>
-            </li>
-
-            <li>
-                <a href="/AddSong" class="flex items-center px-4 py-2 text-gray-400 hover:bg-purple-800 hover:text-white transition rounded-lg">
-                    <svg class="w-6 h-6 mr-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                    AddSong
-                </a>
-            </li>
-
-            <li>
-                <a href="/playlists" class="flex items-center px-4 py-2 text-gray-400 hover:bg-purple-800 hover:text-white transition rounded-lg">
-                    <svg class="w-6 h-6 mr-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h9M8 18h4M3 6h.01M3 12h.01M3 18h.01" />
-                    </svg>
-                    Playlists
-                </a>
-            </li>
-
-        </ul>
-    </div>
-
-
-    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gray-800">
-        <p class="text-gray-400 text-sm">Music Manager </p>
-    </div>
-</nav>
+<MudNavMenu>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        Songs
+    </MudNavLink>
+    <MudNavLink Href="playlists" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QueueMusic">
+        Playlists
+    </MudNavLink>
+</MudNavMenu>
 
 @code {
    

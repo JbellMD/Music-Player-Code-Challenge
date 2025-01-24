@@ -1,17 +1,41 @@
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-using music_manager_starter.Data;
-using System.Security.AccessControl;
+using music_manager_starter.Server.Data;
+using music_manager_starter.Server.Hubs;
+using music_manager_starter.Server.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/music-manager.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 // Add services to the container.
-
-builder.Services.AddDbContext<DataDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
-
-
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+// Add SignalR
+builder.Services.AddSignalR();
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader());
+});
+
+// Add database
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add services
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 
 var app = builder.Build();
 
@@ -23,34 +47,45 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-
-using (var scope = app.Services.CreateScope())
-{
-
-    var path = "App_Data";
-
-    if (!Path.Exists(path)) Directory.CreateDirectory(path);
-    var dbContext = scope.ServiceProvider.GetRequiredService<DataDbContext>();
-
-
-    dbContext.Database.Migrate();
-
-}
-
 app.UseHttpsRedirection();
-
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
+// Use CORS
+app.UseCors("AllowAll");
+
 app.UseRouting();
 
+// Map SignalR hub
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 
-app.Run();
+// Create database and apply migrations
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
+try
+{
+    Log.Information("Starting web application");
+    // Configure the port for Railway
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

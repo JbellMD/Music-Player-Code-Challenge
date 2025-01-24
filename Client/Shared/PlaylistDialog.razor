@@ -1,0 +1,80 @@
+@using music_manager_starter.Shared
+@inject IPlaylistService PlaylistService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudTextField @bind-Value="Playlist.Name" 
+                         Label="Name" 
+                         Required="true" 
+                         RequiredError="Name is required" />
+            
+            <MudTextField @bind-Value="Playlist.Description" 
+                         Label="Description" 
+                         Lines="3" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   OnClick="Submit" 
+                   Disabled="@(!_isValid || _isSubmitting)">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Class="ms-n1" 
+                                   Size="Size.Small" 
+                                   Indeterminate="true" />
+                <MudText Class="ms-2">Saving</MudText>
+            }
+            else
+            {
+                <MudText>Save</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public Playlist Playlist { get; set; } = new();
+
+    private MudForm _form = default!;
+    private bool _isValid;
+    private bool _isSubmitting;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        if (_isValid)
+        {
+            _isSubmitting = true;
+            try
+            {
+                if (Playlist.Id == Guid.Empty)
+                {
+                    await PlaylistService.CreatePlaylistAsync(Playlist);
+                    Snackbar.Add("Playlist created successfully", Severity.Success);
+                }
+                else
+                {
+                    await PlaylistService.UpdatePlaylistAsync(Playlist);
+                    Snackbar.Add("Playlist updated successfully", Severity.Success);
+                }
+                MudDialog.Close(DialogResult.Ok(Playlist));
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error saving playlist: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                _isSubmitting = false;
+            }
+        }
+    }
+}

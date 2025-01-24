@@ -1,65 +1,158 @@
-﻿@page "/"
+@page "/"
 @using music_manager_starter.Shared
+@inject ISongService SongService
+@inject IPlaylistService PlaylistService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
-@inject HttpClient Http
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudPaper Class="pa-4">
+                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                    <MudTextField @bind-Value="_searchQuery" 
+                                Label="Search songs" 
+                                Variant="Variant.Outlined"
+                                Adornment="Adornment.Start"
+                                AdornmentIcon="@Icons.Material.Filled.Search"
+                                OnKeyUp="@(async (e) => { if (e.Key == "Enter") await SearchSongs(); })" />
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary"
+                              OnClick="AddNewSong">
+                        Add Song
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
 
-@code {
-    private List<Song> songs;
-
-    protected override async Task OnInitializedAsync()
-    {
-        songs = await Http.GetFromJsonAsync<List<Song>>("api/songs");
-    }
-}
-
-<div class="p-0 min-h-screen bg-pattern flex flex-col items-center justify-center">
-    <h2 class="text-3xl font-bold text-white mb-8 text-center">Song Library</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        @if (songs != null && songs.Count > 0)
+        @if (_isLoading)
         {
-            @foreach (var song in songs)
-            {
-                <div class="glass p-6 border border-gray-300 rounded-lg text-white transition-transform transform hover:scale-105 hover:shadow-xl cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-2">@song.Title</h3>
-                    <p class="text-md">Artist: <span class="font-light">@song.Artist</span></p>
-
-                </div>
-            }
+            <MudItem xs="12" Class="d-flex justify-center">
+                <Loading IsLoading="true" />
+            </MudItem>
         }
         else
         {
-            <div class="col-span-1 text-center text-gray-400">No songs found.</div>
+            @foreach (var song in _songs)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <SongCard Song="@song"
+                             OnPlay="@PlaySong"
+                             OnAddToPlaylist="@AddToPlaylist"
+                             OnEdit="@EditSong"
+                             OnDelete="@DeleteSong" />
+                </MudItem>
+            }
         }
-    </div>
-</div>
+    </MudGrid>
+</MudContainer>
 
-<style>
-    .bg-pattern {
-        background: linear-gradient( rgba(31, 41, 55, 0.7), rgba(31, 41, 55, 0.7) ), url('dalle.webp');
-        background-size: cover;
-        background-position: center;
-        font-family: 'Rajdhani', sans-serif;
+@code {
+    private List<Song> _songs = new();
+    private string _searchQuery = "";
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSongs();
     }
 
- 
-
-    .glass {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px); 
-        border-radius: 10px; 
-        position: relative; 
-        overflow: hidden; 
+    private async Task LoadSongs()
+    {
+        try
+        {
+            _isLoading = true;
+            _songs = await SongService.GetSongsAsync(_searchQuery);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading songs: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
-        .glass:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            pointer-events: none; 
+    private async Task SearchSongs()
+    {
+        await LoadSongs();
+    }
+
+    private async Task AddNewSong()
+    {
+        var dialog = await DialogService.ShowAsync<SongEditDialog>("Add New Song");
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadSongs();
         }
-</style>
+    }
+
+    private async Task EditSong(Song song)
+    {
+        var parameters = new DialogParameters { ["Song"] = song };
+        var dialog = await DialogService.ShowAsync<SongEditDialog>("Edit Song", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadSongs();
+        }
+    }
+
+    private async Task DeleteSong(Song song)
+    {
+        var confirm = await DialogService.ShowMessageBox(
+            "Delete Song",
+            "Are you sure you want to delete this song?",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (confirm == true)
+        {
+            try
+            {
+                await SongService.DeleteSongAsync(song.Id);
+                await LoadSongs();
+                Snackbar.Add("Song deleted successfully", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error deleting song: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task PlaySong(Song song)
+    {
+        // TODO: Implement audio playback
+        Snackbar.Add($"Playing {song.Title}", Severity.Info);
+    }
+
+    private async Task AddToPlaylist(Song song)
+    {
+        var playlists = await PlaylistService.GetPlaylistsAsync();
+        var options = playlists.Select(p => new DialogChoice { Id = p.Id.ToString(), Text = p.Name }).ToArray();
+
+        var playlistId = await DialogService.ShowChoices("Add to Playlist", 
+            "Select a playlist", 
+            options,
+            submitText: "Add",
+            cancelText: "Cancel");
+
+        if (!string.IsNullOrEmpty(playlistId))
+        {
+            try
+            {
+                await PlaylistService.AddSongToPlaylistAsync(Guid.Parse(playlistId), song.Id);
+                Snackbar.Add("Song added to playlist", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error adding song to playlist: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

@@ -1,0 +1,52 @@
+@using music_manager_starter.Shared
+
+<MudCard>
+    <MudCardMedia Image="@(string.IsNullOrEmpty(Song.AlbumArtUrl) ? "/images/default-album.png" : Song.AlbumArtUrl)" 
+                  Height="200" />
+    <MudCardContent>
+        <MudText Typo="Typo.h6">@Song.Title</MudText>
+        <MudText Typo="Typo.body2">@Song.Artist</MudText>
+        <MudText Typo="Typo.body2">Album: @Song.Album</MudText>
+        <MudText Typo="Typo.body2">Genre: @Song.Genre</MudText>
+        @if (Song.ReleaseDate.HasValue)
+        {
+            <MudText Typo="Typo.body2">Released: @Song.ReleaseDate.Value.ToString("d")</MudText>
+        }
+        <MudRating Value="@((int)Math.Round(Song.AverageRating ?? 0))" 
+                   ReadOnly="true" 
+                   Size="Size.Small" />
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton OnClick="@(() => OnPlay.InvokeAsync(Song))" 
+                   Color="Color.Primary" 
+                   Variant="Variant.Text">
+            Play
+        </MudButton>
+        <MudButton OnClick="@(() => OnAddToPlaylist.InvokeAsync(Song))" 
+                   Color="Color.Secondary" 
+                   Variant="Variant.Text">
+            Add to Playlist
+        </MudButton>
+        <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+            <MudMenuItem OnClick="@(() => OnEdit.InvokeAsync(Song))">Edit</MudMenuItem>
+            <MudMenuItem OnClick="@(() => OnDelete.InvokeAsync(Song))">Delete</MudMenuItem>
+        </MudMenu>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter]
+    public Song Song { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<Song> OnPlay { get; set; }
+
+    [Parameter]
+    public EventCallback<Song> OnAddToPlaylist { get; set; }
+
+    [Parameter]
+    public EventCallback<Song> OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback<Song> OnDelete { get; set; }
+}
