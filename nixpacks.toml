@@ -4,9 +4,14 @@ aptPkgs = ['libicu-dev']
 
 [phases.build]
 cmds = [
+    'dotnet dev-certs https',
     'dotnet restore --runtime linux-x64 /p:ContinuousIntegrationBuild=true',
     'dotnet publish -c Release --runtime linux-x64 --self-contained true /p:UseAppHost=true /p:TreatWarningsAsErrors=false'
 ]
 
 [start]
 cmd = './Server/bin/Release/net6.0/linux-x64/publish/music-manager-starter.Server'
+
+[phases.setup.env]
+DOTNET_CLI_TELEMETRY_OPTOUT = "1"
+ASPNETCORE_ENVIRONMENT = "Production"
