@@ -25,14 +25,14 @@
                          Required="true" 
                          RequiredError="Genre is required" />
             
-            <MudNumericField T="int" @bind-Value="Song.Duration" 
-                            Label="Duration (minutes)" 
-                            Required="true" 
-                            Min="0" 
-                            RequiredError="Duration is required" />
+            <MudNumericField @bind-Value="@Song.Duration" 
+                            Label="Duration (seconds)" 
+                            Variant="Variant.Outlined" 
+                            Min="0" />
             
-            <MudDatePicker @bind-Date="Song.ReleaseDate" 
-                          Label="Release Date" />
+            <MudDatePicker @bind-Date="@Song.ReleaseDate" 
+                          Label="Release Date"
+                          Variant="Variant.Outlined" />
             
             <MudFileUpload T="IBrowserFile" FilesChanged="OnFileChanged">
                 <ButtonTemplate>
@@ -111,7 +111,11 @@
             {
                 if (Song.Id == Guid.Empty)
                 {
-                    await SongService.CreateSongAsync(Song);
+                    var result = await SongService.AddSongAsync(Song);
+                    if (result != null)
+                    {
+                        await OnSave.InvokeAsync(result);
+                    }
                     Snackbar.Add("Song created successfully", Severity.Success);
                 }
                 else
