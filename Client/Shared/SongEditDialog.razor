@@ -25,16 +25,7 @@
                          Required="true"
                          RequiredError="Genre is required" />
 
-            <MudNumericField T="int" @bind-Value="DurationInSeconds" 
-                            Label="Duration (seconds)" 
-                            Variant="Variant.Outlined" 
-                            Min="0" />
-            
-            <MudDatePicker Date="@Song.ReleaseDate" DateChanged="@(date => Song.ReleaseDate = date ?? DateTime.Now)"
-                          Label="Release Date"
-                          Variant="Variant.Outlined" />
-            
-            <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected">
+            <MudFileUpload T="IBrowserFile" OnFilesChanged="OnFileSelected">
                 <ButtonTemplate>
                     <MudButton HtmlTag="label"
                               Variant="Variant.Filled"
@@ -72,18 +63,11 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Song Song { get; set; } = new();
-    [Parameter] public EventCallback<Song> OnSongSaved { get; set; }
 
     private MudForm _form = default!;
     private bool _isValid;
     private bool _isSubmitting;
     private IBrowserFile? _selectedFile;
-
-    private int DurationInSeconds
-    {
-        get => (int)Song.Duration.TotalSeconds;
-        set => Song.Duration = TimeSpan.FromSeconds(value);
-    }
 
     private void Cancel() => MudDialog.Cancel();
 
@@ -99,7 +83,7 @@
         _isSubmitting = true;
         try
         {
-            if (Song.Id == Guid.Empty)
+            if (Song.Id == 0)
             {
                 if (_selectedFile == null)
                 {
@@ -109,15 +93,11 @@
 
                 using var stream = _selectedFile.OpenReadStream();
                 var result = await SongService.CreateSongAsync(Song, stream, _selectedFile.Name);
-                await OnSongSaved.InvokeAsync(result);
-                Snackbar.Add("Song created successfully", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(result));
             }
             else
             {
                 var result = await SongService.UpdateSongAsync(Song);
-                await OnSongSaved.InvokeAsync(result);
-                Snackbar.Add("Song updated successfully", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(result));
             }
         }

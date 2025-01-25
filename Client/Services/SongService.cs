@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Forms;
 using music_manager_starter.Shared;
 using System.Net.Http.Json;
 
@@ -14,12 +15,8 @@ namespace music_manager_starter.Client.Services
 
         public async Task<IEnumerable<Song>> GetSongsAsync(string? searchTerm = null)
         {
-            var url = "api/songs";
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                url += $"?search={Uri.EscapeDataString(searchTerm)}";
-            }
-            return await _httpService.GetAsync<IEnumerable<Song>>(url) ?? Array.Empty<Song>();
+            var query = string.IsNullOrEmpty(searchTerm) ? "" : $"?search={searchTerm}";
+            return await _httpService.GetAsync<IEnumerable<Song>>($"api/songs{query}") ?? Array.Empty<Song>();
         }
 
         public async Task<Song> GetSongAsync(int id)
@@ -49,16 +46,10 @@ namespace music_manager_starter.Client.Services
             await _httpService.DeleteAsync($"api/songs/{id}");
         }
 
-        public async Task<SongRating> RateSongAsync(int songId, int rating)
+        public async Task<int> RateSongAsync(int songId, int rating)
         {
-            var ratingObj = new SongRating
-            {
-                SongId = songId,
-                Rating = rating,
-                RatedAt = DateTime.UtcNow
-            };
-
-            return await _httpService.PostAsync<SongRating>($"api/songs/{songId}/ratings", ratingObj) ?? throw new Exception("Failed to rate song");
+            var response = await _httpService.PostAsync<int>($"api/songs/{songId}/rate", rating);
+            return response;
         }
     }
 }
