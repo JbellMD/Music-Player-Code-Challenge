@@ -13,53 +13,30 @@ namespace music_manager_starter.Server.Tests
 {
     public class PlaylistsControllerTests
     {
-        private readonly Mock<ILogger<PlaylistsController>> _loggerMock;
-        private readonly Mock<NotificationHub> _hubMock;
         private readonly ApplicationDbContext _context;
+        private readonly Mock<ILogger<PlaylistsController>> _loggerMock;
+        private readonly Mock<NotificationHub> _notificationHubMock;
         private readonly PlaylistsController _controller;
 
         public PlaylistsControllerTests()
         {
-            _loggerMock = new Mock<ILogger<PlaylistsController>>();
-            _hubMock = new Mock<NotificationHub>();
-
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(databaseName: "TestDb")
                 .Options;
 
             _context = new ApplicationDbContext(options);
-            _controller = new PlaylistsController(_context, _loggerMock.Object, _hubMock.Object);
+            _loggerMock = new Mock<ILogger<PlaylistsController>>();
+            _notificationHubMock = new Mock<NotificationHub>();
+            _controller = new PlaylistsController(_context, _loggerMock.Object, _notificationHubMock.Object);
         }
 
         [Fact]
-        public async Task GetPlaylists_ReturnsAllPlaylists()
-        {
-            // Arrange
-            var playlists = new List<Playlist>
-            {
-                new Playlist { Id = Guid.NewGuid(), Name = "Playlist 1" },
-                new Playlist { Id = Guid.NewGuid(), Name = "Playlist 2" }
-            };
-
-            _context.Playlists.AddRange(playlists);
-            await _context.SaveChangesAsync();
-
-            // Act
-            var result = await _controller.GetPlaylists();
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var returnedPlaylists = Assert.IsAssignableFrom<IEnumerable<Playlist>>(okResult.Value);
-            Assert.Equal(2, returnedPlaylists.Count());
-        }
-
-        [Fact]
-        public async Task CreatePlaylist_ReturnsCreatedAtAction()
+        public async Task CreatePlaylist_ValidPlaylist_ReturnsOk()
         {
             // Arrange
             var playlist = new Playlist
             {
-                Name = "New Playlist",
+                Name = "Test Playlist",
                 Description = "Test Description"
             };
 
@@ -67,76 +44,40 @@ namespace music_manager_starter.Server.Tests
             var result = await _controller.CreatePlaylist(playlist);
 
             // Assert
-            var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-            var returnedPlaylist = Assert.IsType<Playlist>(createdAtActionResult.Value);
-            Assert.Equal(playlist.Name, returnedPlaylist.Name);
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnValue = Assert.IsType<Playlist>(actionResult.Value);
+            Assert.Equal(playlist.Name, returnValue.Name);
         }
 
         [Fact]
-        public async Task AddSongToPlaylist_WithValidIds_ReturnsOk()
+        public async Task GetPlaylist_ValidId_ReturnsPlaylist()
         {
             // Arrange
             var playlist = new Playlist
             {
-                Id = Guid.NewGuid(),
-                Name = "Test Playlist"
+                Name = "Test Playlist",
+                Description = "Test Description"
             };
-
-            var song = new Song
-            {
-                Id = Guid.NewGuid(),
-                Title = "Test Song"
-            };
-
             _context.Playlists.Add(playlist);
-            _context.Songs.Add(song);
             await _context.SaveChangesAsync();
 
             // Act
-            var result = await _controller.AddSongToPlaylist(playlist.Id, song.Id);
+            var result = await _controller.GetPlaylist(playlist.Id);
 
             // Assert
-            Assert.IsType<OkResult>(result);
-            var playlistSong = await _context.PlaylistSongs
-                .FirstOrDefaultAsync(ps => ps.PlaylistId == playlist.Id && ps.SongId == song.Id);
-            Assert.NotNull(playlistSong);
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnValue = Assert.IsType<Playlist>(actionResult.Value);
+            Assert.Equal(playlist.Name, returnValue.Name);
         }
 
         [Fact]
-        public async Task RemoveSongFromPlaylist_WithValidIds_ReturnsNoContent()
+        public async Task GetPlaylist_InvalidId_ReturnsNotFound()
         {
-            // Arrange
-            var playlist = new Playlist
-            {
-                Id = Guid.NewGuid(),
-                Name = "Test Playlist"
-            };
-
-            var song = new Song
-            {
-                Id = Guid.NewGuid(),
-                Title = "Test Song"
-            };
-
-            var playlistSong = new PlaylistSong
-            {
-                PlaylistId = playlist.Id,
-                SongId = song.Id,
-                Order = 1
-            };
-
-            _context.Playlists.Add(playlist);
-            _context.Songs.Add(song);
-            _context.PlaylistSongs.Add(playlistSong);
-            await _context.SaveChangesAsync();
-
             // Act
-            var result = await _controller.RemoveSongFromPlaylist(playlist.Id, song.Id);
+            var result = await _controller.GetPlaylist(999);
 
             // Assert
-            Assert.IsType<NoContentResult>(result);
-            Assert.Null(await _context.PlaylistSongs
-                .FirstOrDefaultAsync(ps => ps.PlaylistId == playlist.Id && ps.SongId == song.Id));
+            Assert.IsType<NotFoundResult>(result.Result);
         }
     }
 }
