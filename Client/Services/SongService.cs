@@ -46,10 +46,17 @@ namespace music_manager_starter.Client.Services
             await _httpService.DeleteAsync($"api/songs/{id}");
         }
 
-        public async Task<int> RateSongAsync(int songId, int rating)
+        public async Task<SongRating> RateSongAsync(int songId, int rating)
         {
-            var response = await _httpService.PostAsync<int>($"api/songs/{songId}/rate", rating);
-            return response;
+            var ratingObj = new SongRating
+            {
+                SongId = songId,
+                Rating = rating,
+                RatedAt = DateTime.UtcNow
+            };
+
+            return await _httpService.PostAsync<SongRating>($"api/songs/{songId}/rate", ratingObj) ?? 
+                   throw new Exception("Failed to rate song");
         }
     }
 }
