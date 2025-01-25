@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using music_manager_starter.Server.Data;
 using music_manager_starter.Server.Hubs;
 using music_manager_starter.Shared;
 

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using music_manager_starter.Server.Controllers;
+using music_manager_starter.Server.Data;
 using music_manager_starter.Server.Hubs;
 using music_manager_starter.Server.Services;
 using music_manager_starter.Shared;
