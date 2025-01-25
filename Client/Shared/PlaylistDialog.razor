@@ -55,7 +55,7 @@
             _isSubmitting = true;
             try
             {
-                if (Playlist.Id == Guid.Empty)
+                if (Playlist.Id == 0)
                 {
                     await PlaylistService.CreatePlaylistAsync(Playlist);
                     Snackbar.Add("Playlist created successfully", Severity.Success);
