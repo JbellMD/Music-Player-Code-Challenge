@@ -1,0 +1,76 @@
+@using music_manager_starter.Shared
+@inject IPlaylistService PlaylistService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudSelect T="int" Label="Select Playlist" @bind-Value="_selectedPlaylistId">
+            @if (_playlists != null)
+            {
+                @foreach (var playlist in _playlists)
+                {
+                    <MudSelectItem Value="@playlist.Id">@playlist.Name</MudSelectItem>
+                }
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   OnClick="Submit" 
+                   Disabled="@(_selectedPlaylistId == 0 || _isSubmitting)">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Adding</MudText>
+            }
+            else
+            {
+                <MudText>Add</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Song Song { get; set; } = default!;
+
+    private List<Playlist>? _playlists;
+    private int _selectedPlaylistId;
+    private bool _isSubmitting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _playlists = (await PlaylistService.GetPlaylistsAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error loading playlists: " + ex.Message, Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        if (_selectedPlaylistId == 0) return;
+
+        _isSubmitting = true;
+        try
+        {
+            await PlaylistService.AddSongToPlaylistAsync(_selectedPlaylistId, Song.Id);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error adding song to playlist: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

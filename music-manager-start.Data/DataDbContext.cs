@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using music_manager_starter.Data.Models;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ namespace music_manager_starter.Data
     {
         public DataDbContext(DbContextOptions<DataDbContext> options) : base(options) { }
 
-        public DbSet<Song> Songs { get; set; }
+        public DbSet<Song> Songs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -142,8 +142,17 @@
 
     private async Task AddToPlaylist(Song song)
     {
-        // TODO: Implement add to playlist functionality
-        Snackbar.Add("Add to playlist feature coming soon!", Severity.Info);
+        var parameters = new DialogParameters
+        {
+            ["Song"] = song
+        };
+        var dialog = await DialogService.ShowAsync<PlaylistSelectorDialog>("Add to Playlist", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            Snackbar.Add("Song added to playlist successfully!", Severity.Success);
+        }
     }
 
     private void SearchKeyUp(KeyboardEventArgs e)
