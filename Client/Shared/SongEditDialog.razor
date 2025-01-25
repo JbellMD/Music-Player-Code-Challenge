@@ -26,7 +26,7 @@
                          Required="true"
                          RequiredError="Genre is required" />
 
-            <MudFileUpload T="IBrowserFile">
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnFileChanged">
                 <ButtonTemplate>
                     <MudButton HtmlTag="label"
                               Variant="Variant.Filled"
@@ -37,13 +37,11 @@
                     </MudButton>
                 </ButtonTemplate>
                 <SelectedTemplate>
-                    <MudText>@context.FirstOrDefault()?.Name</MudText>
-                </SelectedTemplate>
-                <UploadTemplate>
-                    @{
-                        _selectedFile = context.FirstOrDefault();
+                    @if (_selectedFile != null)
+                    {
+                        <MudText>Selected file: @_selectedFile.Name</MudText>
                     }
-                </UploadTemplate>
+                </SelectedTemplate>
             </MudFileUpload>
         </MudForm>
     </DialogContent>
@@ -73,6 +71,11 @@
     private bool _isValid;
     private bool _isSubmitting;
     private IBrowserFile? _selectedFile;
+
+    private void OnFileChanged(IBrowserFile[] files)
+    {
+        _selectedFile = files.FirstOrDefault();
+    }
 
     private async Task Submit()
     {
