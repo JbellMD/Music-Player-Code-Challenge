@@ -24,75 +24,50 @@ namespace music_manager_starter.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Song>>> GetSongs([FromQuery] string? search = null)
+        public async Task<ActionResult<IEnumerable<Song>>> GetSongs()
         {
-            try
-            {
-                var query = _context.Songs
-                    .Include(s => s.Ratings)
-                    .AsQueryable();
+            var songs = await _context.Songs
+                .Include(s => s.Ratings)
+                .ToListAsync();
 
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    search = search.ToLower();
-                    query = query.Where(s =>
-                        s.Title.ToLower().Contains(search) ||
-                        s.Artist.ToLower().Contains(search) ||
-                        s.Album.ToLower().Contains(search) ||
-                        s.Genre.ToLower().Contains(search));
-                }
-
-                var songs = await query.ToListAsync();
-                return Ok(songs);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "retrieving songs");
-            }
+            return Ok(songs);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Song>> GetSong(Guid id)
+        public async Task<ActionResult<Song>> GetSong(int id)
         {
-            try
-            {
-                var song = await _context.Songs
-                    .Include(s => s.Ratings)
-                    .FirstOrDefaultAsync(s => s.Id == id);
+            var song = await _context.Songs
+                .Include(s => s.Ratings)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
-                if (song == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(song);
-            }
-            catch (Exception ex)
+            if (song == null)
             {
-                return HandleException(ex, "retrieving song");
+                return NotFound();
             }
+
+            return Ok(song);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Song>> CreateSong([FromBody] Song song)
+        public async Task<ActionResult<Song>> CreateSong([FromForm] Song song, IFormFile file)
         {
-            try
+            if (file != null)
             {
-                song.Id = Guid.NewGuid();
-                song.CreatedAt = DateTime.UtcNow;
-                song.UpdatedAt = DateTime.UtcNow;
-
-                _context.Songs.Add(song);
-                await _context.SaveChangesAsync();
-
-                await _notificationHub.SendNewSongNotification(song);
-
-                return CreatedAtAction(nameof(GetSong), new { id = song.Id }, song);
+                using var stream = file.OpenReadStream();
+                var fileName = await _fileUploadService.UploadFileAsync(stream, file.FileName);
+                song.FilePath = fileName;
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "creating song");
-            }
+
+            song.Id = Guid.NewGuid();
+            song.CreatedAt = DateTime.UtcNow;
+            song.UpdatedAt = DateTime.UtcNow;
+
+            _context.Songs.Add(song);
+            await _context.SaveChangesAsync();
+
+            await _notificationHub.SendNewSongNotification(song);
+
+            return Ok(song);
         }
 
         [HttpPut("{id}")]
@@ -146,29 +121,25 @@ namespace music_manager_starter.Server.Controllers
         }
 
         [HttpPost("{id}/rate")]
-        public async Task<ActionResult<SongRating>> RateSong(Guid id, [FromBody] SongRating rating)
+        public async Task<ActionResult<SongRating>> RateSong(int id, [FromBody] int rating)
         {
-            try
+            var song = await _context.Songs.FindAsync(id);
+            if (song == null)
             {
-                var song = await _context.Songs.FindAsync(id);
-                if (song == null)
-                {
-                    return NotFound();
-                }
-
-                rating.Id = Guid.NewGuid();
-                rating.SongId = id;
-                rating.RatedAt = DateTime.UtcNow;
-
-                _context.SongRatings.Add(rating);
-                await _context.SaveChangesAsync();
-
-                return Ok(rating);
+                return NotFound();
             }
-            catch (Exception ex)
+
+            var songRating = new SongRating
             {
-                return HandleException(ex, "rating song");
-            }
+                SongId = id,
+                Rating = rating,
+                RatedAt = DateTime.UtcNow
+            };
+
+            _context.SongRatings.Add(songRating);
+            await _context.SaveChangesAsync();
+
+            return Ok(songRating);
         }
 
         [HttpPost("{id}/upload-art")]

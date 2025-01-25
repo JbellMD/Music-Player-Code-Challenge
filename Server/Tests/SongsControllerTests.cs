@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.InMemory;
 using Moq;
 using music_manager_starter.Server.Controllers;
 using music_manager_starter.Server.Data;

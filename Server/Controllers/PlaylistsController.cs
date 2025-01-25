@@ -25,7 +25,7 @@ namespace music_manager_starter.Server.Controllers
             try
             {
                 var playlists = await _context.Playlists
-                    .Include(p => p.Songs)
+                    .Include(p => p.PlaylistSongs)
                         .ThenInclude(ps => ps.Song)
                     .ToListAsync();
 
@@ -43,7 +43,7 @@ namespace music_manager_starter.Server.Controllers
             try
             {
                 var playlist = await _context.Playlists
-                    .Include(p => p.Songs)
+                    .Include(p => p.PlaylistSongs)
                         .ThenInclude(ps => ps.Song)
                     .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -133,7 +133,7 @@ namespace music_manager_starter.Server.Controllers
             try
             {
                 var playlist = await _context.Playlists
-                    .Include(p => p.Songs)
+                    .Include(p => p.PlaylistSongs)
                     .FirstOrDefaultAsync(p => p.Id == id);
 
                 if (playlist == null)
@@ -147,7 +147,7 @@ namespace music_manager_starter.Server.Controllers
                     return NotFound("Song not found");
                 }
 
-                if (playlist.Songs.Any(ps => ps.SongId == songId))
+                if (playlist.PlaylistSongs.Any(ps => ps.SongId == songId))
                 {
                     return BadRequest("Song already exists in playlist");
                 }
@@ -156,11 +156,11 @@ namespace music_manager_starter.Server.Controllers
                 {
                     PlaylistId = id,
                     SongId = songId,
-                    Order = playlist.Songs.Count + 1,
+                    Order = playlist.PlaylistSongs.Count + 1,
                     AddedAt = DateTime.UtcNow
                 };
 
-                playlist.Songs.Add(playlistSong);
+                playlist.PlaylistSongs.Add(playlistSong);
                 await _context.SaveChangesAsync();
 
                 return Ok();
@@ -201,7 +201,7 @@ namespace music_manager_starter.Server.Controllers
             try
             {
                 var playlist = await _context.Playlists
-                    .Include(p => p.Songs)
+                    .Include(p => p.PlaylistSongs)
                     .FirstOrDefaultAsync(p => p.Id == id);
 
                 if (playlist == null)
@@ -211,7 +211,7 @@ namespace music_manager_starter.Server.Controllers
 
                 foreach (var song in songs)
                 {
-                    var existingSong = playlist.Songs.FirstOrDefault(ps => ps.SongId == song.SongId);
+                    var existingSong = playlist.PlaylistSongs.FirstOrDefault(ps => ps.SongId == song.SongId);
                     if (existingSong != null)
                     {
                         existingSong.Order = song.Order;

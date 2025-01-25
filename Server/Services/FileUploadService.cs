@@ -1,12 +1,15 @@
-using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace music_manager_starter.Server.Services
 {
     public interface IFileUploadService
     {
-        Task<string> SaveAlbumArtAsync(IBrowserFile file);
+        Task<string> SaveAlbumArtAsync(IFormFile file);
         void DeleteAlbumArt(string fileName);
+        Task<string> UploadFileAsync(Stream stream, string fileName);
     }
 
     public class FileUploadService : IFileUploadService
@@ -22,18 +25,18 @@ namespace music_manager_starter.Server.Services
             _logger = logger;
         }
 
-        public async Task<string> SaveAlbumArtAsync(IBrowserFile file)
+        public async Task<string> SaveAlbumArtAsync(IFormFile file)
         {
             try
             {
                 if (file == null)
                     throw new ArgumentNullException(nameof(file));
 
-                var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 if (!_allowedExtensions.Contains(extension))
                     throw new InvalidOperationException($"File type {extension} is not allowed.");
 
-                if (file.Size > MaxFileSize)
+                if (file.Length > MaxFileSize)
                     throw new InvalidOperationException($"File size exceeds maximum limit of {MaxFileSize / 1024 / 1024}MB.");
 
                 var uploadPath = Path.Combine(_environment.WebRootPath, "uploads", "albumart");
@@ -42,8 +45,8 @@ namespace music_manager_starter.Server.Services
                 var fileName = $"{Guid.NewGuid()}{extension}";
                 var filePath = Path.Combine(uploadPath, fileName);
 
-                await using var stream = file.OpenReadStream(MaxFileSize);
-                await using var fileStream = File.Create(filePath);
+                using var stream = file.OpenReadStream();
+                using var fileStream = File.Create(filePath);
                 await stream.CopyToAsync(fileStream);
 
                 return fileName;
@@ -71,6 +74,23 @@ namespace music_manager_starter.Server.Services
             {
                 _logger.LogError(ex, "Error deleting album art: {FileName}", fileName);
             }
+        }
+
+        public async Task<string> UploadFileAsync(Stream stream, string fileName)
+        {
+            var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+            
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            using var fileStream = new FileStream(filePath, FileMode.Create);
+            await stream.CopyToAsync(fileStream);
+
+            return uniqueFileName;
         }
     }
 }
