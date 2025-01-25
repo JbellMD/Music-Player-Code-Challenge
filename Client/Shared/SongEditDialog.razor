@@ -1,4 +1,5 @@
 @using music_manager_starter.Shared
+@using Microsoft.AspNetCore.Components.Forms
 @inject ISongService SongService
 @inject ISnackbar Snackbar
 
@@ -25,7 +26,7 @@
                          Required="true"
                          RequiredError="Genre is required" />
 
-            <MudFileUpload T="IBrowserFile" FilesChanged="@OnFileSelected">
+            <MudFileUpload T="IBrowserFile">
                 <ButtonTemplate>
                     <MudButton HtmlTag="label"
                               Variant="Variant.Filled"
@@ -35,17 +36,21 @@
                         Upload Music File
                     </MudButton>
                 </ButtonTemplate>
+                <SelectedTemplate>
+                    <MudText>@context.FirstOrDefault()?.Name</MudText>
+                </SelectedTemplate>
+                <UploadTemplate>
+                    @{
+                        _selectedFile = context.FirstOrDefault();
+                    }
+                </UploadTemplate>
             </MudFileUpload>
-            @if (_selectedFile != null)
-            {
-                <MudText Class="mt-2">Selected file: @_selectedFile.Name</MudText>
-            }
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="@(e => Cancel())">Cancel</MudButton>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">Cancel</MudButton>
         <MudButton Color="Color.Primary"
-                   OnClick="@(e => Submit())"
+                   OnClick="@(async () => await Submit())"
                    Disabled="@(!_isValid || _isSubmitting)">
             @if (_isSubmitting)
             {
@@ -68,13 +73,6 @@
     private bool _isValid;
     private bool _isSubmitting;
     private IBrowserFile? _selectedFile;
-
-    private void Cancel() => MudDialog.Cancel();
-
-    private void OnFileSelected(IBrowserFile[] files)
-    {
-        _selectedFile = files.FirstOrDefault();
-    }
 
     private async Task Submit()
     {
