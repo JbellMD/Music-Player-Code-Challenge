@@ -1,33 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using music_manager_starter.Server.Data;
-using music_manager_starter.Server.Hubs;
-using music_manager_starter.Server.Services;
+using music_manager_starter.Data;
 using music_manager_starter.Shared;
 
 namespace music_manager_starter.Server.Controllers
 {
-    public class SongsController : ApiControllerBase
+    [ApiController]
+    [Route("api/[controller]")]
+    public class SongsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IFileUploadService _fileUploadService;
 
-        public SongsController(
-            ApplicationDbContext context,
-            IFileUploadService fileUploadService,
-            ILogger<SongsController> logger,
-            NotificationHub notificationHub)
-            : base(logger, notificationHub)
+        public SongsController(ApplicationDbContext context)
         {
             _context = context;
-            _fileUploadService = fileUploadService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Song>>> GetSongs()
         {
             var songs = await _context.Songs
-                .Include(s => s.Ratings)
+                .Include(s => s.PlaylistSongs)
                 .ToListAsync();
 
             return Ok(songs);
@@ -37,7 +30,7 @@ namespace music_manager_starter.Server.Controllers
         public async Task<ActionResult<Song>> GetSong(int id)
         {
             var song = await _context.Songs
-                .Include(s => s.Ratings)
+                .Include(s => s.PlaylistSongs)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (song == null)
@@ -51,77 +44,57 @@ namespace music_manager_starter.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<Song>> CreateSong([FromForm] Song song, IFormFile file)
         {
-            if (file != null)
+            if (file == null || file.Length == 0)
             {
-                using var stream = file.OpenReadStream();
-                var fileName = await _fileUploadService.UploadFileAsync(stream, file.FileName);
-                song.FilePath = fileName;
+                return BadRequest("No file uploaded");
             }
 
-            song.Id = Guid.NewGuid();
-            song.CreatedAt = DateTime.UtcNow;
-            song.UpdatedAt = DateTime.UtcNow;
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            Directory.CreateDirectory(uploadsFolder);
 
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            song.FilePath = $"/uploads/{fileName}";
             _context.Songs.Add(song);
             await _context.SaveChangesAsync();
 
-            await _notificationHub.SendNewSongNotification(song);
+            return CreatedAtAction(nameof(GetSong), new { id = song.Id }, song);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Song>> UpdateSong(int id, Song song)
+        {
+            if (id != song.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(song).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!SongExists(id))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
 
             return Ok(song);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSong(Guid id, [FromBody] Song song)
-        {
-            try
-            {
-                if (id != song.Id)
-                {
-                    return BadRequest();
-                }
-
-                song.UpdatedAt = DateTime.UtcNow;
-                _context.Entry(song).State = EntityState.Modified;
-                _context.Entry(song).Property(x => x.CreatedAt).IsModified = false;
-
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "updating song");
-            }
-        }
-
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSong(Guid id)
-        {
-            try
-            {
-                var song = await _context.Songs.FindAsync(id);
-                if (song == null)
-                {
-                    return NotFound();
-                }
-
-                if (!string.IsNullOrEmpty(song.AlbumArtUrl))
-                {
-                    _fileUploadService.DeleteAlbumArt(song.AlbumArtUrl);
-                }
-
-                _context.Songs.Remove(song);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "deleting song");
-            }
-        }
-
-        [HttpPost("{id}/rate")]
-        public async Task<ActionResult<SongRating>> RateSong(int id, [FromBody] int rating)
+        public async Task<IActionResult> DeleteSong(int id)
         {
             var song = await _context.Songs.FindAsync(id);
             if (song == null)
@@ -129,49 +102,50 @@ namespace music_manager_starter.Server.Controllers
                 return NotFound();
             }
 
-            var songRating = new SongRating
+            if (!string.IsNullOrEmpty(song.FilePath))
             {
-                SongId = id,
-                Rating = rating,
-                RatedAt = DateTime.UtcNow
-            };
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", song.FilePath.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
 
-            _context.SongRatings.Add(songRating);
+            _context.Songs.Remove(song);
             await _context.SaveChangesAsync();
 
-            return Ok(songRating);
+            return NoContent();
         }
 
-        [HttpPost("{id}/upload-art")]
-        public async Task<IActionResult> UploadAlbumArt(Guid id, [FromForm] IFormFile file)
+        [HttpPost("{id}/rate")]
+        public async Task<ActionResult<SongRating>> RateSong(int id, [FromBody] SongRating rating)
         {
-            try
+            var song = await _context.Songs.FindAsync(id);
+            if (song == null)
             {
-                var song = await _context.Songs.FindAsync(id);
-                if (song == null)
-                {
-                    return NotFound();
-                }
-
-                // Delete existing album art if it exists
-                if (!string.IsNullOrEmpty(song.AlbumArtUrl))
-                {
-                    _fileUploadService.DeleteAlbumArt(song.AlbumArtUrl);
-                }
-
-                // Save new album art
-                var fileName = await _fileUploadService.SaveAlbumArtAsync(file);
-                song.AlbumArtUrl = fileName;
-                song.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                return Ok(new { fileName });
+                return NotFound();
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "uploading album art");
-            }
+
+            rating.SongId = id;
+            rating.RatedAt = DateTime.UtcNow;
+
+            _context.SongRatings.Add(rating);
+            await _context.SaveChangesAsync();
+
+            // Update the song's average rating
+            var averageRating = await _context.SongRatings
+                .Where(r => r.SongId == id)
+                .AverageAsync(r => r.Rating);
+
+            song.Rating = (int)Math.Round(averageRating);
+            await _context.SaveChangesAsync();
+
+            return Ok(rating);
+        }
+
+        private bool SongExists(int id)
+        {
+            return _context.Songs.Any(e => e.Id == id);
         }
     }
 }

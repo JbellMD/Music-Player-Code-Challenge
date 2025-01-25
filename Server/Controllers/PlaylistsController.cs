@@ -1,20 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using music_manager_starter.Server.Data;
-using music_manager_starter.Server.Hubs;
+using music_manager_starter.Data;
 using music_manager_starter.Shared;
 
 namespace music_manager_starter.Server.Controllers
 {
-    public class PlaylistsController : ApiControllerBase
+    [ApiController]
+    [Route("api/[controller]")]
+    public class PlaylistsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
-        public PlaylistsController(
-            ApplicationDbContext context,
-            ILogger<PlaylistsController> logger,
-            NotificationHub notificationHub)
-            : base(logger, notificationHub)
+        public PlaylistsController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -22,209 +19,176 @@ namespace music_manager_starter.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Playlist>>> GetPlaylists()
         {
-            try
-            {
-                var playlists = await _context.Playlists
-                    .Include(p => p.PlaylistSongs)
-                        .ThenInclude(ps => ps.Song)
-                    .ToListAsync();
+            var playlists = await _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                .ThenInclude(ps => ps.Song)
+                .ToListAsync();
 
-                return Ok(playlists);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "retrieving playlists");
-            }
+            return Ok(playlists);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Playlist>> GetPlaylist(Guid id)
+        public async Task<ActionResult<Playlist>> GetPlaylist(int id)
         {
-            try
-            {
-                var playlist = await _context.Playlists
-                    .Include(p => p.PlaylistSongs)
-                        .ThenInclude(ps => ps.Song)
-                    .FirstOrDefaultAsync(p => p.Id == id);
+            var playlist = await _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                .ThenInclude(ps => ps.Song)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-                if (playlist == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(playlist);
-            }
-            catch (Exception ex)
+            if (playlist == null)
             {
-                return HandleException(ex, "retrieving playlist");
+                return NotFound();
             }
+
+            return Ok(playlist);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Playlist>> CreatePlaylist([FromBody] Playlist playlist)
+        public async Task<ActionResult<Playlist>> CreatePlaylist(Playlist playlist)
         {
-            try
-            {
-                playlist.Id = Guid.NewGuid();
-                playlist.CreatedAt = DateTime.UtcNow;
-                playlist.UpdatedAt = DateTime.UtcNow;
+            _context.Playlists.Add(playlist);
+            await _context.SaveChangesAsync();
 
-                _context.Playlists.Add(playlist);
-                await _context.SaveChangesAsync();
-
-                await _notificationHub.SendNewPlaylistNotification(playlist);
-
-                return CreatedAtAction(nameof(GetPlaylist), new { id = playlist.Id }, playlist);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "creating playlist");
-            }
+            return CreatedAtAction(nameof(GetPlaylist), new { id = playlist.Id }, playlist);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePlaylist(Guid id, [FromBody] Playlist playlist)
+        public async Task<ActionResult<Playlist>> UpdatePlaylist(int id, Playlist playlist)
         {
+            if (id != playlist.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(playlist).State = EntityState.Modified;
+
             try
             {
-                if (id != playlist.Id)
-                {
-                    return BadRequest();
-                }
-
-                playlist.UpdatedAt = DateTime.UtcNow;
-                _context.Entry(playlist).State = EntityState.Modified;
-                _context.Entry(playlist).Property(x => x.CreatedAt).IsModified = false;
-
                 await _context.SaveChangesAsync();
-                return NoContent();
             }
-            catch (Exception ex)
+            catch (DbUpdateConcurrencyException)
             {
-                return HandleException(ex, "updating playlist");
+                if (!PlaylistExists(id))
+                {
+                    return NotFound();
+                }
+                throw;
             }
+
+            return Ok(playlist);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePlaylist(Guid id)
+        public async Task<IActionResult> DeletePlaylist(int id)
         {
-            try
+            var playlist = await _context.Playlists.FindAsync(id);
+            if (playlist == null)
             {
-                var playlist = await _context.Playlists.FindAsync(id);
-                if (playlist == null)
-                {
-                    return NotFound();
-                }
-
-                _context.Playlists.Remove(playlist);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
+                return NotFound();
             }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "deleting playlist");
-            }
+
+            _context.Playlists.Remove(playlist);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
-        [HttpPost("{id}/songs")]
-        public async Task<IActionResult> AddSongToPlaylist(Guid id, [FromBody] Guid songId)
+        [HttpPost("{playlistId}/songs/{songId}")]
+        public async Task<ActionResult<Playlist>> AddSongToPlaylist(int playlistId, int songId)
         {
-            try
+            var playlist = await _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                .FirstOrDefaultAsync(p => p.Id == playlistId);
+
+            if (playlist == null)
             {
-                var playlist = await _context.Playlists
-                    .Include(p => p.PlaylistSongs)
-                    .FirstOrDefaultAsync(p => p.Id == id);
-
-                if (playlist == null)
-                {
-                    return NotFound("Playlist not found");
-                }
-
-                var song = await _context.Songs.FindAsync(songId);
-                if (song == null)
-                {
-                    return NotFound("Song not found");
-                }
-
-                if (playlist.PlaylistSongs.Any(ps => ps.SongId == songId))
-                {
-                    return BadRequest("Song already exists in playlist");
-                }
-
-                var playlistSong = new PlaylistSong
-                {
-                    PlaylistId = id,
-                    SongId = songId,
-                    Order = playlist.PlaylistSongs.Count + 1,
-                    AddedAt = DateTime.UtcNow
-                };
-
-                playlist.PlaylistSongs.Add(playlistSong);
-                await _context.SaveChangesAsync();
-
-                return Ok();
+                return NotFound("Playlist not found");
             }
-            catch (Exception ex)
+
+            var song = await _context.Songs.FindAsync(songId);
+            if (song == null)
             {
-                return HandleException(ex, "adding song to playlist");
+                return NotFound("Song not found");
             }
+
+            var playlistSong = new PlaylistSong
+            {
+                PlaylistId = playlistId,
+                SongId = songId,
+                Order = playlist.PlaylistSongs.Count
+            };
+
+            playlist.PlaylistSongs.Add(playlistSong);
+            await _context.SaveChangesAsync();
+
+            return Ok(playlist);
         }
 
-        [HttpDelete("{id}/songs/{songId}")]
-        public async Task<IActionResult> RemoveSongFromPlaylist(Guid id, Guid songId)
+        [HttpDelete("{playlistId}/songs/{songId}")]
+        public async Task<ActionResult<Playlist>> RemoveSongFromPlaylist(int playlistId, int songId)
         {
-            try
+            var playlist = await _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                .FirstOrDefaultAsync(p => p.Id == playlistId);
+
+            if (playlist == null)
             {
-                var playlistSong = await _context.PlaylistSongs
-                    .FirstOrDefaultAsync(ps => ps.PlaylistId == id && ps.SongId == songId);
-
-                if (playlistSong == null)
-                {
-                    return NotFound();
-                }
-
-                _context.PlaylistSongs.Remove(playlistSong);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
+                return NotFound("Playlist not found");
             }
-            catch (Exception ex)
+
+            var playlistSong = playlist.PlaylistSongs
+                .FirstOrDefault(ps => ps.PlaylistId == playlistId && ps.SongId == songId);
+
+            if (playlistSong == null)
             {
-                return HandleException(ex, "removing song from playlist");
+                return NotFound("Song not found in playlist");
             }
+
+            playlist.PlaylistSongs.Remove(playlistSong);
+
+            // Reorder remaining songs
+            var remainingSongs = playlist.PlaylistSongs.OrderBy(ps => ps.Order).ToList();
+            for (int i = 0; i < remainingSongs.Count; i++)
+            {
+                remainingSongs[i].Order = i;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(playlist);
         }
 
-        [HttpPut("{id}/songs/reorder")]
-        public async Task<IActionResult> ReorderPlaylistSongs(Guid id, [FromBody] List<PlaylistSong> songs)
+        [HttpPut("{playlistId}/songs/reorder")]
+        public async Task<ActionResult<Playlist>> ReorderPlaylistSongs(int playlistId, [FromBody] List<PlaylistSong> songs)
         {
-            try
+            var playlist = await _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                .FirstOrDefaultAsync(p => p.Id == playlistId);
+
+            if (playlist == null)
             {
-                var playlist = await _context.Playlists
-                    .Include(p => p.PlaylistSongs)
-                    .FirstOrDefaultAsync(p => p.Id == id);
-
-                if (playlist == null)
-                {
-                    return NotFound();
-                }
-
-                foreach (var song in songs)
-                {
-                    var existingSong = playlist.PlaylistSongs.FirstOrDefault(ps => ps.SongId == song.SongId);
-                    if (existingSong != null)
-                    {
-                        existingSong.Order = song.Order;
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                return NoContent();
+                return NotFound("Playlist not found");
             }
-            catch (Exception ex)
+
+            foreach (var song in songs)
             {
-                return HandleException(ex, "reordering playlist songs");
+                var playlistSong = playlist.PlaylistSongs
+                    .FirstOrDefault(ps => ps.PlaylistId == playlistId && ps.SongId == song.SongId);
+
+                if (playlistSong != null)
+                {
+                    playlistSong.Order = song.Order;
+                }
             }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(playlist);
+        }
+
+        private bool PlaylistExists(int id)
+        {
+            return _context.Playlists.Any(e => e.Id == id);
         }
     }
 }

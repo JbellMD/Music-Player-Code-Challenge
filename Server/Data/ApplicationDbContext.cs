@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using music_manager_starter.Shared;
 
-namespace music_manager_starter.Server.Data
+namespace music_manager_starter.Data
 {
     public class ApplicationDbContext : DbContext
     {
@@ -25,17 +25,17 @@ namespace music_manager_starter.Server.Data
 
             modelBuilder.Entity<PlaylistSong>()
                 .HasOne(ps => ps.Playlist)
-                .WithMany(p => p.Songs)
+                .WithMany(p => p.PlaylistSongs)
                 .HasForeignKey(ps => ps.PlaylistId);
 
             modelBuilder.Entity<PlaylistSong>()
                 .HasOne(ps => ps.Song)
-                .WithMany(s => s.Playlists)
+                .WithMany(s => s.PlaylistSongs)
                 .HasForeignKey(ps => ps.SongId);
 
             modelBuilder.Entity<SongRating>()
                 .HasOne(sr => sr.Song)
-                .WithMany(s => s.Ratings)
+                .WithMany()
                 .HasForeignKey(sr => sr.SongId);
         }
     }
