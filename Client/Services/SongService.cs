@@ -50,6 +50,7 @@ namespace music_manager_starter.Client.Services
         {
             var ratingObj = new SongRating
             {
+                Id = 0, // Will be set by server
                 SongId = songId,
                 Rating = rating,
                 RatedAt = DateTime.UtcNow

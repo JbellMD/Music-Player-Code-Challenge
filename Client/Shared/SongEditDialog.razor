@@ -25,7 +25,7 @@
                          Required="true"
                          RequiredError="Genre is required" />
 
-            <MudFileUpload T="IBrowserFile" OnFilesChanged="OnFileSelected">
+            <MudFileUpload T="IBrowserFile" FilesChanged="@OnFileSelected">
                 <ButtonTemplate>
                     <MudButton HtmlTag="label"
                               Variant="Variant.Filled"
@@ -43,9 +43,9 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton OnClick="@(e => Cancel())">Cancel</MudButton>
         <MudButton Color="Color.Primary"
-                   OnClick="Submit"
+                   OnClick="@(e => Submit())"
                    Disabled="@(!_isValid || _isSubmitting)">
             @if (_isSubmitting)
             {
