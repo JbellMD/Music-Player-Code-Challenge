@@ -4,15 +4,14 @@ aptPkgs = ['libicu-dev']
 
 [phases.install]
 cmds = [
-    'npm install -g cross-env tailwindcss',
+    'cd Client && npm install && cd ..',
     'dotnet restore --runtime linux-x64'
 ]
 
 [phases.build]
 cmds = [
     'dotnet dev-certs https',
-    'cd Client && npm install',
-    'npm run buildcss:release',
+    'cd Client && npm run buildcss:release && cd ..',
     'dotnet publish -c Release --runtime linux-x64 --self-contained true'
 ]
 
