@@ -2,21 +2,13 @@ using System;
 
 namespace music_manager_starter.Shared
 {
-    public class Notification
+    public sealed class Notification
     {
-        public Guid Id { get; set; }
-        public string Title { get; set; }
-        public string Message { get; set; }
-        public NotificationType Type { get; set; }
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public bool IsRead { get; set; }
-    }
-
-    public enum NotificationType
-    {
-        NewSong,
-        NewPlaylist,
-        NewRating,
-        SystemMessage
+        public string? Link { get; set; }
     }
 }
