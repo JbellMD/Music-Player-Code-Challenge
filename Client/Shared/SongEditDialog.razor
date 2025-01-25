@@ -1,5 +1,6 @@
 @using music_manager_starter.Shared
 @using Microsoft.AspNetCore.Components.Forms
+@using System.Linq
 @inject ISongService SongService
 @inject ISnackbar Snackbar
 
@@ -36,10 +37,10 @@
                         Upload Music File
                     </MudButton>
                 </ButtonTemplate>
-                <SelectedTemplate Context="selectedFiles">
-                    @if (selectedFiles.FirstOrDefault() is IBrowserFile file)
+                <SelectedTemplate>
+                    @if (_selectedFile != null)
                     {
-                        <MudText>Selected file: @file.Name</MudText>
+                        <MudText>Selected file: @_selectedFile.Name</MudText>
                     }
                 </SelectedTemplate>
             </MudFileUpload>
@@ -74,7 +75,11 @@
 
     private void OnFileChanged(InputFileChangeEventArgs e)
     {
-        _selectedFile = e.GetMultipleFiles(1).FirstOrDefault();
+        var file = e.File;
+        if (file != null)
+        {
+            _selectedFile = file;
+        }
     }
 
     private async Task Submit()
