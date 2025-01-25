@@ -44,7 +44,8 @@
     {
         try
         {
-            _playlists = (await PlaylistService.GetPlaylistsAsync()).ToList();
+            var result = await PlaylistService.GetPlaylistsAsync();
+            _playlists = result.ToList();
         }
         catch (Exception ex)
         {

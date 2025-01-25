@@ -4,31 +4,27 @@
 
 <MudDialog>
     <DialogContent>
-        <MudContainer Style="max-height: 500px; overflow-y: scroll">
-            <MudTextField @bind-Value="@Song.Title" 
-                         Label="Title" 
-                         Variant="Variant.Outlined"
-                         Required="true" 
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudTextField @bind-Value="Song.Title"
+                         Label="Title"
+                         Required="true"
                          RequiredError="Title is required" />
-            
-            <MudTextField @bind-Value="@Song.Artist" 
-                         Label="Artist" 
-                         Variant="Variant.Outlined"
-                         Required="true" 
+
+            <MudTextField @bind-Value="Song.Artist"
+                         Label="Artist"
+                         Required="true"
                          RequiredError="Artist is required" />
-            
-            <MudTextField @bind-Value="@Song.Album" 
-                         Label="Album" 
-                         Variant="Variant.Outlined"
-                         Required="true" 
+
+            <MudTextField @bind-Value="Song.Album"
+                         Label="Album"
+                         Required="true"
                          RequiredError="Album is required" />
-            
-            <MudTextField @bind-Value="@Song.Genre" 
-                         Label="Genre" 
-                         Variant="Variant.Outlined"
-                         Required="true" 
+
+            <MudTextField @bind-Value="Song.Genre"
+                         Label="Genre"
+                         Required="true"
                          RequiredError="Genre is required" />
-            
+
             <MudNumericField T="int" @bind-Value="DurationInSeconds" 
                             Label="Duration (seconds)" 
                             Variant="Variant.Outlined" 
@@ -38,25 +34,50 @@
                           Label="Release Date"
                           Variant="Variant.Outlined" />
             
-            <MudFileUpload T="IBrowserFile" FilesChanged="OnFileChanged">
+            <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected">
                 <ButtonTemplate>
-                    <MudButton HtmlTag="button" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
-                        Upload Album Art
+                    <MudButton HtmlTag="label"
+                              Variant="Variant.Filled"
+                              Color="Color.Primary"
+                              StartIcon="@Icons.Material.Filled.CloudUpload"
+                              for="@context">
+                        Upload Music File
                     </MudButton>
                 </ButtonTemplate>
             </MudFileUpload>
-        </MudContainer>
+            @if (_selectedFile != null)
+            {
+                <MudText Class="mt-2">Selected file: @_selectedFile.Name</MudText>
+            }
+        </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">@(Song.Id == Guid.Empty ? "Create" : "Update")</MudButton>
+        <MudButton Color="Color.Primary"
+                   OnClick="Submit"
+                   Disabled="@(!_isValid || _isSubmitting)">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Saving</MudText>
+            }
+            else
+            {
+                <MudText>Save</MudText>
+            }
+        </MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Song Song { get; set; } = new();
     [Parameter] public EventCallback<Song> OnSongSaved { get; set; }
-    [CascadingParameter] public MudDialogInstance? MudDialog { get; set; }
+
+    private MudForm _form = default!;
+    private bool _isValid;
+    private bool _isSubmitting;
+    private IBrowserFile? _selectedFile;
 
     private int DurationInSeconds
     {
@@ -64,66 +85,49 @@
         set => Song.Duration = TimeSpan.FromSeconds(value);
     }
 
+    private void Cancel() => MudDialog.Cancel();
+
+    private void OnFileSelected(IBrowserFile[] files)
+    {
+        _selectedFile = files.FirstOrDefault();
+    }
+
     private async Task Submit()
     {
-        if (MudDialog == null) return;
+        if (!_isValid) return;
 
+        _isSubmitting = true;
         try
         {
             if (Song.Id == Guid.Empty)
             {
-                var result = await SongService.AddSongAsync(Song);
-                if (result != null)
+                if (_selectedFile == null)
                 {
-                    await OnSongSaved.InvokeAsync(result);
-                    Snackbar.Add("Song created successfully", Severity.Success);
+                    Snackbar.Add("Please select a music file", Severity.Warning);
+                    return;
                 }
+
+                using var stream = _selectedFile.OpenReadStream();
+                var result = await SongService.CreateSongAsync(Song, stream, _selectedFile.Name);
+                await OnSongSaved.InvokeAsync(result);
+                Snackbar.Add("Song created successfully", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(result));
             }
             else
             {
                 var result = await SongService.UpdateSongAsync(Song);
-                if (result != null)
-                {
-                    await OnSongSaved.InvokeAsync(result);
-                    Snackbar.Add("Song updated successfully", Severity.Success);
-                }
+                await OnSongSaved.InvokeAsync(result);
+                Snackbar.Add("Song updated successfully", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(result));
             }
-            MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error saving song: {ex.Message}", Severity.Error);
         }
-    }
-
-    private void Cancel()
-    {
-        if (MudDialog != null)
+        finally
         {
-            MudDialog.Cancel();
-        }
-    }
-
-    private async Task OnFileChanged(IBrowserFile file)
-    {
-        if (Song.Id != Guid.Empty)
-        {
-            try
-            {
-                var result = await SongService.UploadAlbumArtAsync(Song.Id, file);
-                if (!string.IsNullOrEmpty(result))
-                {
-                    Snackbar.Add("Album art uploaded successfully", Severity.Success);
-                }
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Error uploading album art: {ex.Message}", Severity.Error);
-            }
-        }
-        else
-        {
-            Snackbar.Add("Please save the song before uploading album art", Severity.Warning);
+            _isSubmitting = false;
         }
     }
 }
