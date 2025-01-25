@@ -1,69 +1,67 @@
 using music_manager_starter.Shared;
+using System.Net.Http.Json;
 
 namespace music_manager_starter.Client.Services
 {
     public interface IPlaylistService
     {
-        Task<List<Playlist>> GetPlaylistsAsync();
-        Task<Playlist> GetPlaylistAsync(Guid id);
+        Task<IEnumerable<Playlist>> GetPlaylistsAsync();
+        Task<Playlist> GetPlaylistAsync(int id);
         Task<Playlist> CreatePlaylistAsync(Playlist playlist);
-        Task UpdatePlaylistAsync(Playlist playlist);
-        Task DeletePlaylistAsync(Guid id);
-        Task AddSongToPlaylistAsync(Guid playlistId, Guid songId);
-        Task RemoveSongFromPlaylistAsync(Guid playlistId, Guid songId);
-        Task ReorderPlaylistSongsAsync(Guid playlistId, List<PlaylistSong> songs);
+        Task<Playlist> UpdatePlaylistAsync(Playlist playlist);
+        Task DeletePlaylistAsync(int id);
+        Task AddSongToPlaylistAsync(int playlistId, int songId);
+        Task RemoveSongFromPlaylistAsync(int playlistId, int songId);
+        Task ReorderPlaylistSongsAsync(int playlistId, List<PlaylistSong> songs);
     }
 
     public class PlaylistService : IPlaylistService
     {
-        private readonly IHttpService _httpService;
-        private const string BaseUrl = "api/playlists";
+        private readonly HttpService _httpService;
 
-        public PlaylistService(IHttpService httpService)
+        public PlaylistService(HttpService httpService)
         {
             _httpService = httpService;
         }
 
-        public async Task<List<Playlist>> GetPlaylistsAsync()
+        public async Task<IEnumerable<Playlist>> GetPlaylistsAsync()
         {
-            return await _httpService.GetAsync<List<Playlist>>(BaseUrl) ?? new List<Playlist>();
+            return await _httpService.GetAsync<IEnumerable<Playlist>>("api/playlists") ?? Array.Empty<Playlist>();
         }
 
-        public async Task<Playlist> GetPlaylistAsync(Guid id)
+        public async Task<Playlist> GetPlaylistAsync(int id)
         {
-            return await _httpService.GetAsync<Playlist>($"{BaseUrl}/{id}")
-                ?? throw new Exception("Playlist not found");
+            return await _httpService.GetAsync<Playlist>($"api/playlists/{id}") ?? throw new Exception("Playlist not found");
         }
 
         public async Task<Playlist> CreatePlaylistAsync(Playlist playlist)
         {
-            return await _httpService.PostAsync<Playlist>(BaseUrl, playlist)
-                ?? throw new Exception("Failed to create playlist");
+            return await _httpService.PostAsync<Playlist>("api/playlists", playlist) ?? throw new Exception("Failed to create playlist");
         }
 
-        public async Task UpdatePlaylistAsync(Playlist playlist)
+        public async Task<Playlist> UpdatePlaylistAsync(Playlist playlist)
         {
-            await _httpService.PutAsync<Playlist>($"{BaseUrl}/{playlist.Id}", playlist);
+            return await _httpService.PutAsync<Playlist>($"api/playlists/{playlist.Id}", playlist) ?? throw new Exception("Failed to update playlist");
         }
 
-        public async Task DeletePlaylistAsync(Guid id)
+        public async Task DeletePlaylistAsync(int id)
         {
-            await _httpService.DeleteAsync($"{BaseUrl}/{id}");
+            await _httpService.DeleteAsync($"api/playlists/{id}");
         }
 
-        public async Task AddSongToPlaylistAsync(Guid playlistId, Guid songId)
+        public async Task AddSongToPlaylistAsync(int playlistId, int songId)
         {
-            await _httpService.PostAsync<object>($"{BaseUrl}/{playlistId}/songs", songId);
+            await _httpService.PostAsync($"api/playlists/{playlistId}/songs/{songId}", null);
         }
 
-        public async Task RemoveSongFromPlaylistAsync(Guid playlistId, Guid songId)
+        public async Task RemoveSongFromPlaylistAsync(int playlistId, int songId)
         {
-            await _httpService.DeleteAsync($"{BaseUrl}/{playlistId}/songs/{songId}");
+            await _httpService.DeleteAsync($"api/playlists/{playlistId}/songs/{songId}");
         }
 
-        public async Task ReorderPlaylistSongsAsync(Guid playlistId, List<PlaylistSong> songs)
+        public async Task ReorderPlaylistSongsAsync(int playlistId, List<PlaylistSong> songs)
         {
-            await _httpService.PutAsync<object>($"{BaseUrl}/{playlistId}/songs/reorder", songs);
+            await _httpService.PutAsync<object>($"api/playlists/{playlistId}/songs/reorder", songs);
         }
     }
 }
