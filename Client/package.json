@@ -1,0 +1,12 @@
+{
+  "name": "music-manager-client",
+  "version": "1.0.0",
+  "description": "Music Manager Client",
+  "scripts": {
+    "buildcss:release": "cross-env NODE_ENV=production tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --minify"
+  },
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "tailwindcss": "^3.3.3"
+  }
+}

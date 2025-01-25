@@ -3,11 +3,16 @@ nixPkgs = ['nodejs', 'dotnet-sdk_6', 'openssl', 'cacert']
 aptPkgs = ['libicu-dev']
 
 [phases.install]
-cmds = ['dotnet restore --runtime linux-x64']
+cmds = [
+    'npm install -g cross-env tailwindcss',
+    'dotnet restore --runtime linux-x64'
+]
 
 [phases.build]
 cmds = [
     'dotnet dev-certs https',
+    'cd Client && npm install',
+    'npm run buildcss:release',
     'dotnet publish -c Release --runtime linux-x64 --self-contained true'
 ]
 
