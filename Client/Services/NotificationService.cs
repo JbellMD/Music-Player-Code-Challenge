@@ -1,14 +1,17 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using music_manager_starter.Shared;
+using System;
 
 namespace music_manager_starter.Client.Services
 {
     public interface INotificationService
     {
         event Action<Notification>? OnNotificationReceived;
+        event Action<string, string, string>? OnNotification;
         Task StartAsync();
         Task StopAsync();
+        void ShowNotification(string message, string title, string severity);
     }
 
     public class NotificationService : INotificationService, IAsyncDisposable
@@ -18,6 +21,7 @@ namespace music_manager_starter.Client.Services
         private bool _isStarted;
 
         public event Action<Notification>? OnNotificationReceived;
+        public event Action<string, string, string>? OnNotification;
 
         public NotificationService(NavigationManager navigationManager)
         {
@@ -30,7 +34,20 @@ namespace music_manager_starter.Client.Services
             _hubConnection.On<Notification>("ReceiveNotification", notification =>
             {
                 OnNotificationReceived?.Invoke(notification);
+                OnNotification?.Invoke(notification.Message, notification.Title, "info");
             });
+        }
+
+        public void ShowNotification(string message, string title = "Notification", string severity = "info")
+        {
+            var notification = new Notification
+            {
+                Message = message,
+                Title = title,
+                CreatedAt = DateTime.UtcNow
+            };
+            OnNotificationReceived?.Invoke(notification);
+            OnNotification?.Invoke(message, title, severity);
         }
 
         public async Task StartAsync()
