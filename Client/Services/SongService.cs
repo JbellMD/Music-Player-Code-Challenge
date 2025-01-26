@@ -4,17 +4,7 @@ using System.Net.Http.Json;
 
 namespace music_manager_starter.Client.Services
 {
-    public interface ISongService
-    {
-        Task<IEnumerable<Song>> GetSongsAsync(string? searchTerm = null);
-        Task<Song> GetSongAsync(int id);
-        Task<Song> CreateSongAsync(Song song, Stream fileStream, string fileName);
-        Task<Song> UpdateSongAsync(Song song);
-        Task DeleteSongAsync(int id);
-        Task<SongRating> RateSongAsync(int songId, int rating);
-    }
-
-    public class SongService : ISongService
+    public class SongService 
     {
         private readonly IHttpService _httpService;
         private readonly HttpClient _httpClient;
