@@ -7,11 +7,11 @@ namespace music_manager_starter.Client.Services
     public interface ISongService
     {
         Task<IEnumerable<Song>> GetSongsAsync(string? searchTerm = null);
-        Task<Song?> GetSongAsync(int id);
-        Task<Song?> CreateSongAsync(Song song, IBrowserFile file);
-        Task<Song?> UpdateSongAsync(int id, Song song);
+        Task<Song> GetSongAsync(int id);
+        Task<Song> CreateSongAsync(Song song, Stream fileStream, string fileName);
+        Task<Song> UpdateSongAsync(Song song);
         Task DeleteSongAsync(int id);
-        Task<SongRating?> RateSongAsync(int id, int rating);
+        Task<SongRating> RateSongAsync(int songId, int rating);
     }
 
     public class SongService : ISongService
@@ -31,33 +31,35 @@ namespace music_manager_starter.Client.Services
             return await _httpService.GetAsync<IEnumerable<Song>>($"api/songs{query}") ?? Array.Empty<Song>();
         }
 
-        public async Task<Song?> GetSongAsync(int id)
+        public async Task<Song> GetSongAsync(int id)
         {
-            return await _httpService.GetAsync<Song>($"api/songs/{id}");
+            return await _httpService.GetAsync<Song>($"api/songs/{id}") ?? 
+                   throw new Exception($"Song with id {id} not found");
         }
 
-        public async Task<Song?> CreateSongAsync(Song song, IBrowserFile file)
+        public async Task<Song> CreateSongAsync(Song song, Stream fileStream, string fileName)
         {
             // First upload the file
             using var content = new MultipartFormDataContent();
-            using var fileStream = file.OpenReadStream();
             using var streamContent = new StreamContent(fileStream);
-            content.Add(streamContent, "file", file.Name);
+            content.Add(streamContent, "file", fileName);
 
             var response = await _httpClient.PostAsync("api/songs/upload", content);
             if (!response.IsSuccessStatusCode)
-                return null;
+                throw new Exception("Failed to upload song file");
 
             var filePath = await response.Content.ReadAsStringAsync();
             song.FilePath = filePath;
 
             // Then create the song
-            return await _httpService.PostAsync<Song>("api/songs", song);
+            return await _httpService.PostAsync<Song>("api/songs", song) ?? 
+                   throw new Exception("Failed to create song");
         }
 
-        public async Task<Song?> UpdateSongAsync(int id, Song song)
+        public async Task<Song> UpdateSongAsync(Song song)
         {
-            return await _httpService.PutAsync<Song>($"api/songs/{id}", song);
+            return await _httpService.PutAsync<Song>($"api/songs/{song.Id}", song) ?? 
+                   throw new Exception($"Failed to update song with id {song.Id}");
         }
 
         public async Task DeleteSongAsync(int id)
@@ -65,9 +67,10 @@ namespace music_manager_starter.Client.Services
             await _httpService.DeleteAsync($"api/songs/{id}");
         }
 
-        public async Task<SongRating?> RateSongAsync(int id, int rating)
+        public async Task<SongRating> RateSongAsync(int songId, int rating)
         {
-            return await _httpService.PostAsync<SongRating>($"api/songs/{id}/rate", new { Rating = rating });
+            return await _httpService.PostAsync<SongRating>($"api/songs/{songId}/rate", new { Rating = rating }) ?? 
+                   throw new Exception($"Failed to rate song with id {songId}");
         }
     }
 }
