@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 
 namespace music_manager_starter.Client.Services
 {
-    public class SongService 
+    public class SongService : ISongService
     {
         private readonly IHttpService _httpService;
         private readonly HttpClient _httpClient;

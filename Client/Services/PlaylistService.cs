@@ -42,7 +42,7 @@ namespace music_manager_starter.Client.Services
 
         public async Task AddSongToPlaylistAsync(int playlistId, int songId)
         {
-            await _httpService.PostAsync<object>($"api/playlists/{playlistId}/songs/{songId}", null);
+            await _httpService.PostAsync<object>($"api/playlists/{playlistId}/songs/{songId}", new { });
         }
 
         public async Task RemoveSongFromPlaylistAsync(int playlistId, int songId)
