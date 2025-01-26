@@ -1,18 +1,12 @@
 # Use the .NET SDK image to build the application
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
-WORKDIR /src
+WORKDIR /source
 
-# Copy csproj files and restore dependencies
-COPY ["Server/music-manager-starter.Server.csproj", "Server/"]
-COPY ["Client/music-manager-starter.Client.csproj", "Client/"]
-COPY ["Shared/music-manager-starter.Shared.csproj", "Shared/"]
-COPY ["Data/music-manager-start.Data.csproj", "Data/"]
-RUN dotnet restore "Server/music-manager-starter.Server.csproj"
-
-# Copy the rest of the source code
+# Copy everything
 COPY . .
 
-# Build and publish the application
+# Restore dependencies and build
+RUN dotnet restore "Server/music-manager-starter.Server.csproj"
 RUN dotnet publish "Server/music-manager-starter.Server.csproj" -c Release -o /app/publish
 
 # Build the runtime image
