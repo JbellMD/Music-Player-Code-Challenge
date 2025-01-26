@@ -2,8 +2,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /source
 
+# Install Node.js and npm
+RUN apk add --update nodejs npm
+
 # Copy everything
 COPY . .
+
+# Install npm dependencies and build client assets
+WORKDIR /source
+RUN npm install
+RUN mkdir -p Client/wwwroot/css
+RUN npm run buildcss:release
 
 # Restore dependencies and build
 RUN dotnet restore "Server/music-manager-starter.Server.csproj"
