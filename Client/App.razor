@@ -1,8 +1,11 @@
+@using MudBlazor
+
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <MudThemeProvider Theme="_theme" />
         <MudDialogProvider />
         <MudSnackbarProvider />
+        <MudPopoverProvider DisablePopoverProvider="true" />
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
@@ -19,9 +22,9 @@
     {
         Palette = new PaletteLight
         {
-            Primary = Colors.Blue.Default,
-            Secondary = Colors.Green.Accent4,
-            AppbarBackground = Colors.Blue.Default,
+            Primary = "#1976d2",
+            Secondary = "#424242",
+            AppbarBackground = "#1976d2"
         },
         Typography = new Typography
         {
