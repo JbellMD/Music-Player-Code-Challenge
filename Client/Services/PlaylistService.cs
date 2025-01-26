@@ -3,11 +3,22 @@ using System.Net.Http.Json;
 
 namespace music_manager_starter.Client.Services
 {
+    public interface IPlaylistService
+    {
+        Task<IEnumerable<Playlist>> GetPlaylistsAsync();
+        Task<Playlist?> GetPlaylistAsync(int id);
+        Task<Playlist?> CreatePlaylistAsync(Playlist playlist);
+        Task<Playlist?> UpdatePlaylistAsync(int id, Playlist playlist);
+        Task DeletePlaylistAsync(int id);
+        Task<Playlist?> AddSongToPlaylistAsync(int playlistId, int songId);
+        Task<Playlist?> RemoveSongFromPlaylistAsync(int playlistId, int songId);
+    }
+
     public class PlaylistService : IPlaylistService
     {
-        private readonly HttpService _httpService;
+        private readonly IHttpService _httpService;
 
-        public PlaylistService(HttpService httpService)
+        public PlaylistService(IHttpService httpService)
         {
             _httpService = httpService;
         }
@@ -17,19 +28,19 @@ namespace music_manager_starter.Client.Services
             return await _httpService.GetAsync<IEnumerable<Playlist>>("api/playlists") ?? Array.Empty<Playlist>();
         }
 
-        public async Task<Playlist> GetPlaylistAsync(int id)
+        public async Task<Playlist?> GetPlaylistAsync(int id)
         {
-            return await _httpService.GetAsync<Playlist>($"api/playlists/{id}") ?? throw new Exception("Playlist not found");
+            return await _httpService.GetAsync<Playlist>($"api/playlists/{id}");
         }
 
-        public async Task<Playlist> CreatePlaylistAsync(Playlist playlist)
+        public async Task<Playlist?> CreatePlaylistAsync(Playlist playlist)
         {
-            return await _httpService.PostAsync<Playlist>("api/playlists", playlist) ?? throw new Exception("Failed to create playlist");
+            return await _httpService.PostAsync<Playlist>("api/playlists", playlist);
         }
 
-        public async Task<Playlist> UpdatePlaylistAsync(Playlist playlist)
+        public async Task<Playlist?> UpdatePlaylistAsync(int id, Playlist playlist)
         {
-            return await _httpService.PutAsync<Playlist>($"api/playlists/{playlist.Id}", playlist) ?? throw new Exception("Failed to update playlist");
+            return await _httpService.PutAsync<Playlist>($"api/playlists/{id}", playlist);
         }
 
         public async Task DeletePlaylistAsync(int id)
@@ -37,19 +48,14 @@ namespace music_manager_starter.Client.Services
             await _httpService.DeleteAsync($"api/playlists/{id}");
         }
 
-        public async Task AddSongToPlaylistAsync(int playlistId, int songId)
+        public async Task<Playlist?> AddSongToPlaylistAsync(int playlistId, int songId)
         {
-            await _httpService.PostAsync<object>($"api/playlists/{playlistId}/songs/{songId}", new { });
+            return await _httpService.PostAsync<Playlist>($"api/playlists/{playlistId}/songs/{songId}", null);
         }
 
-        public async Task RemoveSongFromPlaylistAsync(int playlistId, int songId)
+        public async Task<Playlist?> RemoveSongFromPlaylistAsync(int playlistId, int songId)
         {
-            await _httpService.DeleteAsync($"api/playlists/{playlistId}/songs/{songId}");
-        }
-
-        public async Task ReorderPlaylistSongsAsync(int playlistId, List<PlaylistSong> songs)
-        {
-            await _httpService.PutAsync<object>($"api/playlists/{playlistId}/songs/reorder", songs);
+            return await _httpService.PutAsync<Playlist>($"api/playlists/{playlistId}/songs/{songId}/remove", null);
         }
     }
 }

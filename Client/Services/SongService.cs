@@ -4,13 +4,25 @@ using System.Net.Http.Json;
 
 namespace music_manager_starter.Client.Services
 {
+    public interface ISongService
+    {
+        Task<IEnumerable<Song>> GetSongsAsync(string? searchTerm = null);
+        Task<Song?> GetSongAsync(int id);
+        Task<Song?> CreateSongAsync(Song song, IBrowserFile file);
+        Task<Song?> UpdateSongAsync(int id, Song song);
+        Task DeleteSongAsync(int id);
+        Task<SongRating?> RateSongAsync(int id, int rating);
+    }
+
     public class SongService : ISongService
     {
-        private readonly HttpService _httpService;
+        private readonly IHttpService _httpService;
+        private readonly HttpClient _httpClient;
 
-        public SongService(HttpService httpService)
+        public SongService(IHttpService httpService, HttpClient httpClient)
         {
             _httpService = httpService;
+            _httpClient = httpClient;
         }
 
         public async Task<IEnumerable<Song>> GetSongsAsync(string? searchTerm = null)
@@ -19,26 +31,33 @@ namespace music_manager_starter.Client.Services
             return await _httpService.GetAsync<IEnumerable<Song>>($"api/songs{query}") ?? Array.Empty<Song>();
         }
 
-        public async Task<Song> GetSongAsync(int id)
+        public async Task<Song?> GetSongAsync(int id)
         {
-            return await _httpService.GetAsync<Song>($"api/songs/{id}") ?? throw new Exception("Song not found");
+            return await _httpService.GetAsync<Song>($"api/songs/{id}");
         }
 
-        public async Task<Song> CreateSongAsync(Song song, Stream fileStream, string fileName)
+        public async Task<Song?> CreateSongAsync(Song song, IBrowserFile file)
         {
-            var content = new MultipartFormDataContent();
-            content.Add(new StreamContent(fileStream), "file", fileName);
-            content.Add(new StringContent(song.Title), "title");
-            content.Add(new StringContent(song.Artist), "artist");
-            content.Add(new StringContent(song.Album), "album");
-            content.Add(new StringContent(song.Genre), "genre");
-            
-            return await _httpService.PostAsync<Song>("api/songs", content) ?? throw new Exception("Failed to create song");
+            // First upload the file
+            using var content = new MultipartFormDataContent();
+            using var fileStream = file.OpenReadStream();
+            using var streamContent = new StreamContent(fileStream);
+            content.Add(streamContent, "file", file.Name);
+
+            var response = await _httpClient.PostAsync("api/songs/upload", content);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var filePath = await response.Content.ReadAsStringAsync();
+            song.FilePath = filePath;
+
+            // Then create the song
+            return await _httpService.PostAsync<Song>("api/songs", song);
         }
 
-        public async Task<Song> UpdateSongAsync(Song song)
+        public async Task<Song?> UpdateSongAsync(int id, Song song)
         {
-            return await _httpService.PutAsync<Song>($"api/songs/{song.Id}", song) ?? throw new Exception("Failed to update song");
+            return await _httpService.PutAsync<Song>($"api/songs/{id}", song);
         }
 
         public async Task DeleteSongAsync(int id)
@@ -46,18 +65,9 @@ namespace music_manager_starter.Client.Services
             await _httpService.DeleteAsync($"api/songs/{id}");
         }
 
-        public async Task<SongRating> RateSongAsync(int songId, int rating)
+        public async Task<SongRating?> RateSongAsync(int id, int rating)
         {
-            var ratingObj = new SongRating
-            {
-                Id = 0, // Will be set by server
-                SongId = songId,
-                Rating = rating,
-                RatedAt = DateTime.UtcNow
-            };
-
-            return await _httpService.PostAsync<SongRating>($"api/songs/{songId}/rate", ratingObj) ?? 
-                   throw new Exception("Failed to rate song");
+            return await _httpService.PostAsync<SongRating>($"api/songs/{id}/rate", new { Rating = rating });
         }
     }
 }
