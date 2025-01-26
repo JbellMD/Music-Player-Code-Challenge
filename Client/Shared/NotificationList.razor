@@ -22,6 +22,10 @@
                         <MudText Typo="Typo.subtitle1">@notification.Title</MudText>
                         <MudText Typo="Typo.body2">@notification.Message</MudText>
                         <MudText Typo="Typo.caption">@notification.CreatedAt.ToLocalTime().ToString("g")</MudText>
+                        @if (!string.IsNullOrEmpty(notification.Link))
+                        {
+                            <MudLink Href="@notification.Link" Target="_blank">View Details</MudLink>
+                        }
                     </MudStack>
                 </MudListItem>
                 <MudDivider />
