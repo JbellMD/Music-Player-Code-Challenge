@@ -7,16 +7,25 @@
         <MudText Typo="Typo.h6">Notifications</MudText>
     </MudDrawerHeader>
     <MudList Clickable="true">
-        @foreach (var notification in _notifications.OrderByDescending(n => n.CreatedAt))
+        @if (!_notifications.Any())
         {
             <MudListItem>
-                <MudStack>
-                    <MudText Typo="Typo.subtitle1">@notification.Title</MudText>
-                    <MudText Typo="Typo.body2">@notification.Message</MudText>
-                    <MudText Typo="Typo.caption">@notification.CreatedAt.ToLocalTime().ToString("g")</MudText>
-                </MudStack>
+                <MudText Typo="Typo.body2">No notifications</MudText>
             </MudListItem>
-            <MudDivider />
+        }
+        else
+        {
+            @foreach (var notification in _notifications.OrderByDescending(n => n.CreatedAt))
+            {
+                <MudListItem>
+                    <MudStack>
+                        <MudText Typo="Typo.subtitle1">@notification.Title</MudText>
+                        <MudText Typo="Typo.body2">@notification.Message</MudText>
+                        <MudText Typo="Typo.caption">@notification.CreatedAt.ToLocalTime().ToString("g")</MudText>
+                    </MudStack>
+                </MudListItem>
+                <MudDivider />
+            }
         }
     </MudList>
 </MudDrawer>
@@ -51,11 +60,15 @@
     private void HandleNotification(Notification notification)
     {
         _notifications.Add(notification);
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        NotificationService.OnNotificationReceived -= HandleNotification;
+        if (NotificationService is not null)
+        {
+            NotificationService.OnNotificationReceived -= HandleNotification;
+            _ = NotificationService.StopAsync();
+        }
     }
 }
