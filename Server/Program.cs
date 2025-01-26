@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using music_manager_starter.Server.Data;
+using music_manager_starter.Data;
 using music_manager_starter.Server.Hubs;
 using music_manager_starter.Server.Services;
 using Serilog;
@@ -32,7 +32,7 @@ builder.Services.AddCors(options =>
 
 // Add database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseInMemoryDatabase("MusicManagerDb"));
 
 // Add services
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();

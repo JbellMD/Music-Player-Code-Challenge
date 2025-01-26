@@ -5,6 +5,7 @@ using music_manager_starter.Server.Controllers;
 using music_manager_starter.Shared;
 using Microsoft.AspNetCore.Http;
 using System.Text;
+using Xunit;
 
 namespace music_manager_starter.Server.Tests
 {

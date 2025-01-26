@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using music_manager_starter.Data;
 using music_manager_starter.Server.Controllers;
 using music_manager_starter.Shared;
+using Xunit;
 
 namespace music_manager_starter.Server.Tests
 {
