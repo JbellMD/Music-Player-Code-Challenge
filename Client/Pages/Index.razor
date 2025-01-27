@@ -4,30 +4,27 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-    <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
-        <MudToolBar DisableGutters="true">
-            <MudText Typo="Typo.h5" Class="font-bold">Songs</MudText>
-            <MudSpacer />
-            <div class="flex-grow mx-4" style="max-width: 600px;">
-                <MudTextField @bind-Value="searchTerm"
-                            Placeholder="Search songs..."
-                            Adornment="Adornment.Start"
-                            AdornmentIcon="@Icons.Material.Filled.Search"
-                            Variant="Variant.Outlined"
-                            Class="mt-0"
-                            FullWidth="true"
-                            @onkeyup="SearchKeyUp" />
-            </div>
-            <MudButton Variant="Variant.Filled"
-                      Color="Color.Primary"
-                      StartIcon="@Icons.Material.Filled.Add"
-                      OnClick="CreateSong"
-                      Class="rounded-full px-6">
-                Add Song
-            </MudButton>
-        </MudToolBar>
-    </MudPaper>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex align-center gap-4">
+        <MudText Typo="Typo.h5" Class="font-bold shrink-0">Songs</MudText>
+        <div class="flex-grow-1">
+            <MudTextField @bind-Value="searchTerm"
+                         Placeholder="Search songs..."
+                         Adornment="Adornment.Start"
+                         AdornmentIcon="@Icons.Material.Filled.Search"
+                         Variant="Variant.Outlined"
+                         Class="mt-0"
+                         FullWidth="true"
+                         @onkeyup="SearchKeyUp" />
+        </div>
+        <MudButton Variant="Variant.Filled"
+                  Color="Color.Primary"
+                  StartIcon="@Icons.Material.Filled.Add"
+                  OnClick="CreateSong"
+                  Class="rounded-full px-6 shrink-0">
+            Add Song
+        </MudButton>
+    </div>
 
     <div class="mt-6">
         @if (songs == null)
