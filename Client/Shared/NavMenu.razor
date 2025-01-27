@@ -14,7 +14,7 @@
         Playlists
     </MudNavLink>
 
-    <MudDivider Class="my-2" />
+    <MudDivider Class="my-2 dark:border-gray-700" />
     
     <div class="px-4 py-2">
         <MudText Typo="Typo.overline" Color="Color.Primary" Class="font-semibold">LIBRARY</MudText>
@@ -28,6 +28,29 @@
         Recently Played
     </MudNavLink>
 </MudNavMenu>
+
+<style>
+    .mud-nav-link {
+        border-radius: 0.5rem;
+        margin: 0 0.5rem;
+    }
+    
+    .mud-nav-link:hover {
+        background-color: var(--mud-palette-primary-hover);
+    }
+    
+    .mud-nav-link.active {
+        background-color: var(--mud-palette-primary-lighten);
+    }
+    
+    .dark .mud-nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .dark .mud-nav-link.active {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+</style>
 
 @code {
    

@@ -4,10 +4,17 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
-    <MudAppBar Elevation="0" Color="Color.Transparent" Class="border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="@(_isDarkMode ? Color.Surface : Color.Dark)" Edge="Edge.Start" OnClick="@ToggleDrawer" />
-        <MudText Typo="Typo.h6" Color="@(_isDarkMode ? Color.Surface : Color.Dark)" Class="ml-4 font-bold">Music Manager</MudText>
+<MudLayout Class="@($"bg-gradient-to-br {(_isDarkMode ? "from-gray-900 to-gray-800" : "from-gray-50 to-indigo-50")}")">
+    <MudAppBar Elevation="0" 
+               Color="Color.Transparent" 
+               Class="border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" 
+                      Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
+                      Edge="Edge.Start" 
+                      OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6" 
+                Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
+                Class="ml-4 font-bold">Music Manager</MudText>
         <MudSpacer />
         <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
                       Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
@@ -20,13 +27,13 @@
     <MudDrawer @bind-Open="@_drawerOpen" 
                ClipMode="DrawerClipMode.Always" 
                Elevation="0" 
-               Color="Color.Surface" 
+               Color="@(_isDarkMode ? Color.Dark : Color.Surface)"
                Variant="@DrawerVariant.Mini" 
                Class="border-r border-gray-200 dark:border-gray-800">
         <NavMenu />
     </MudDrawer>
 
-    <MudMainContent Class="pt-16 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-indigo-900 min-h-screen">
+    <MudMainContent Class="pt-16">
         <NotificationList @bind-IsOpen="_showNotifications" />
         @Body
     </MudMainContent>
@@ -44,7 +51,7 @@
             Primary = "#6366F1",
             Secondary = "#EC4899",
             AppbarBackground = "rgba(255,255,255,0.8)",
-            Background = "#FFFFFF",
+            Background = "#F9FAFB",
             DrawerBackground = "#FFFFFF",
             Surface = "#FFFFFF",
             TextPrimary = "#1F2937",
@@ -56,10 +63,10 @@
         {
             Primary = "#818CF8",
             Secondary = "#F472B6",
-            AppbarBackground = "rgba(31,41,55,0.8)",
+            AppbarBackground = "rgba(17,24,39,0.8)",
             Background = "#111827",
-            DrawerBackground = "#111827",
-            Surface = "#1F2937",
+            DrawerBackground = "#1F2937",
+            Surface = "#F3F4F6",
             TextPrimary = "#F3F4F6",
             TextSecondary = "#D1D5DB",
             DrawerText = "#F3F4F6",
