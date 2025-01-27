@@ -47,25 +47,15 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="@(() => MudDialog.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
         <MudButton Color="Color.Primary"
-                   OnClick="@(async () => await Submit())"
-                   Disabled="@(!_isValid || _isSubmitting)">
-            @if (_isSubmitting)
-            {
-                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                <MudText Class="ms-2">Saving</MudText>
-            }
-            else
-            {
-                <MudText>Save</MudText>
-            }
-        </MudButton>
+                   Disabled="@(!_isValid || _isSubmitting)"
+                   OnClick="@(async () => await Submit())">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public Song Song { get; set; } = new();
 
     private MudForm _form = default!;
@@ -115,5 +105,10 @@
         {
             _isSubmitting = false;
         }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
     }
 }
