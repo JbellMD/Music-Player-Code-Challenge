@@ -47,10 +47,21 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton OnClick="@Cancel" Variant="Variant.Text" Color="Color.Default">Cancel</MudButton>
         <MudButton Color="Color.Primary"
-                   Disabled="@(!_isValid || _isSubmitting)"
-                   OnClick="@(async () => await Submit())">Save</MudButton>
+                  Variant="Variant.Filled"
+                  Disabled="@(!_isValid || _isSubmitting)"
+                  OnClick="@Submit">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Saving</MudText>
+            }
+            else
+            {
+                <MudText>Save</MudText>
+            }
+        </MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -109,6 +120,9 @@
 
     private void Cancel()
     {
-        MudDialog.Cancel();
+        if (MudDialog is not null)
+        {
+            MudDialog.Cancel();
+        }
     }
 }

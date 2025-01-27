@@ -2,9 +2,15 @@
 @implements IDisposable
 @inject INotificationService NotificationService
 
-<MudDrawer @bind-Open="@_isOpen" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Temporary">
+<MudDrawer @bind-Open="@_isOpen" 
+           Anchor="Anchor.Right" 
+           Elevation="1" 
+           Variant="@DrawerVariant.Temporary"
+           ClipMode="DrawerClipMode.Always">
     <MudDrawerHeader>
         <MudText Typo="Typo.h6">Notifications</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => IsOpen = false)" />
     </MudDrawerHeader>
     <MudList Clickable="true">
         @if (!_notifications.Any())
