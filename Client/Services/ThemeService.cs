@@ -5,7 +5,7 @@ namespace music_manager_starter.Client.Services
     public interface IThemeService
     {
         bool IsDarkMode { get; set; }
-        event Action<bool> OnThemeChanged;
+        event Action<bool>? OnThemeChanged;
     }
 
     public class ThemeService : IThemeService
@@ -25,6 +25,6 @@ namespace music_manager_starter.Client.Services
             }
         }
 
-        public event Action<bool> OnThemeChanged;
+        public event Action<bool>? OnThemeChanged;
     }
 }

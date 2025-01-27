@@ -1,20 +1,15 @@
-@using MudBlazor
 @using Microsoft.AspNetCore.Components.Web
 
 <CascadingValue Value="this">
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <MudThemeProvider Theme="_theme" />
-            <MudDialogProvider />
-            <MudSnackbarProvider />
-            <MudPopoverProvider />
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>
             <LayoutView Layout="@typeof(MainLayout)">
-                <MudAlert Severity="Severity.Error">Sorry, there's nothing at this address.</MudAlert>
+                <p role="alert">Sorry, there's nothing at this address.</p>
             </LayoutView>
         </NotFound>
     </Router>
@@ -25,29 +20,12 @@
 <MudSnackbarProvider />
 
 @code {
-    private MudTheme _theme = new MudTheme
-    {
-        Palette = new PaletteLight
-        {
-            Primary = "#1976d2",
-            Secondary = "#424242",
-            AppbarBackground = "#1976d2"
-        },
-        Typography = new Typography
-        {
-            Default = new Default
-            {
-                FontFamily = new[] { "Roboto", "Helvetica", "Arial", "sans-serif" }
-            }
-        }
-    };
-
     private bool _isDarkMode;
-    private MudThemeProvider _mudThemeProvider;
+    private MudThemeProvider _mudThemeProvider = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && _mudThemeProvider != null)
         {
             _isDarkMode = await _mudThemeProvider.GetSystemPreference();
             StateHasChanged();

@@ -14,9 +14,13 @@
                     Color="@(ParentApp?.IsDarkMode == true ? Color.Surface : Color.Dark)" 
                     Class="ml-4 font-bold">Music Manager</MudText>
             <MudSpacer />
-            <MudIconButton Icon="@(ParentApp?.IsDarkMode == true ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
-                          Color="@(ParentApp?.IsDarkMode == true ? Color.Surface : Color.Dark)" 
-                          OnClick="@ToggleTheme" />
+            <MudToggleIconButton
+                @bind-Toggled="@_isDarkMode"
+                Icon="@Icons.Material.Filled.LightMode"
+                Color="@(ParentApp?.IsDarkMode == true ? Color.Surface : Color.Dark)"
+                Title="Light Mode"
+                ToggledIcon="@Icons.Material.Filled.DarkMode"
+                ToggledTitle="Dark Mode" />
             <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
                           Color="@(ParentApp?.IsDarkMode == true ? Color.Surface : Color.Dark)" 
                           OnClick="@ToggleNotifications" />
@@ -53,10 +57,22 @@
 </style>
 
 @code {
-    [CascadingParameter] public App ParentApp { get; set; }
+    [CascadingParameter]
+    public App? ParentApp { get; set; }
     
     private bool _drawerOpen = true;
     private bool _showNotifications;
+    private bool _isDarkMode
+    {
+        get => ParentApp?.IsDarkMode ?? false;
+        set
+        {
+            if (ParentApp?.IsDarkMode != value)
+            {
+                ParentApp.IsDarkMode = value;
+            }
+        }
+    }
 
     private void ToggleDrawer()
     {

@@ -181,44 +181,47 @@
 </MudContainer>
 
 <style>
-    .music-icon-large {
+    ::deep .music-icon-large {
         font-size: 64px;
     }
     
-    .music-note-1 {
-        animation: float 3s ease-in-out infinite;
+    ::deep .music-note-1 {
+        animation: float1 3s ease-in-out infinite;
         right: -20px;
         top: -10px;
     }
     
-    .music-note-2 {
-        animation: float 2.5s ease-in-out infinite 0.5s;
+    ::deep .music-note-2 {
+        animation: float2 2.5s ease-in-out infinite;
         left: -15px;
         top: 10px;
     }
     
-    .music-note-3 {
-        animation: float 2s ease-in-out infinite 1s;
+    ::deep .music-note-3 {
+        animation: float3 2s ease-in-out infinite;
         right: -10px;
         bottom: -5px;
     }
     
-    @keyframes float {
-        0% {
-            transform: translateY(0px);
-            opacity: 0.5;
-        }
-        50% {
-            transform: translateY(-10px);
-            opacity: 1;
-        }
-        100% {
-            transform: translateY(0px);
-            opacity: 0.5;
-        }
+    @keyframes float1 {
+        0% { transform: translateY(0px); opacity: 0.5; }
+        50% { transform: translateY(-10px); opacity: 1; }
+        100% { transform: translateY(0px); opacity: 0.5; }
     }
     
-    .max-width-sm {
+    @keyframes float2 {
+        0% { transform: translateY(0px); opacity: 0.5; }
+        50% { transform: translateY(-8px); opacity: 1; }
+        100% { transform: translateY(0px); opacity: 0.5; }
+    }
+    
+    @keyframes float3 {
+        0% { transform: translateY(0px); opacity: 0.5; }
+        50% { transform: translateY(-6px); opacity: 1; }
+        100% { transform: translateY(0px); opacity: 0.5; }
+    }
+    
+    ::deep .max-width-sm {
         max-width: 500px;
     }
 </style>
