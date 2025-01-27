@@ -1,90 +1,62 @@
 @inherits LayoutComponentBase
+@inject IThemeService ThemeService
 
-<MudThemeProvider Theme="_theme" @bind-IsDarkMode="_isDarkMode" />
-<MudDialogProvider />
-<MudSnackbarProvider />
+<div class="@($"app-container {(ParentApp?.IsDarkMode == true ? "dark" : "")}")">
+    <MudLayout>
+        <MudAppBar Elevation="0" 
+                   Color="Color.Transparent" 
+                   Class="border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" 
+                          Color="@(ParentApp?.IsDarkMode == true ? Color.Surface : Color.Dark)" 
+                          Edge="Edge.Start" 
+                          OnClick="@ToggleDrawer" />
+            <MudText Typo="Typo.h6" 
+                    Color="@(ParentApp?.IsDarkMode == true ? Color.Surface : Color.Dark)" 
+                    Class="ml-4 font-bold">Music Manager</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@(ParentApp?.IsDarkMode == true ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
+                          Color="@(ParentApp?.IsDarkMode == true ? Color.Surface : Color.Dark)" 
+                          OnClick="@ToggleTheme" />
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
+                          Color="@(ParentApp?.IsDarkMode == true ? Color.Surface : Color.Dark)" 
+                          OnClick="@ToggleNotifications" />
+        </MudAppBar>
 
-<MudLayout Class="@($"bg-gradient-to-br {(_isDarkMode ? "from-gray-900 to-gray-800" : "from-gray-50 to-indigo-50")}")">
-    <MudAppBar Elevation="0" 
-               Color="Color.Transparent" 
-               Class="border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" 
-                      Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
-                      Edge="Edge.Start" 
-                      OnClick="@ToggleDrawer" />
-        <MudText Typo="Typo.h6" 
-                Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
-                Class="ml-4 font-bold">Music Manager</MudText>
-        <MudSpacer />
-        <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
-                      Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
-                      OnClick="@ToggleTheme" />
-        <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
-                      Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
-                      OnClick="@ToggleNotifications" />
-    </MudAppBar>
+        <MudDrawer @bind-Open="@_drawerOpen" 
+                   ClipMode="DrawerClipMode.Always" 
+                   Elevation="0" 
+                   Color="@(ParentApp?.IsDarkMode == true ? Color.Dark : Color.Surface)"
+                   Variant="@DrawerVariant.Mini" 
+                   Class="border-r border-gray-200 dark:border-gray-800">
+            <NavMenu />
+        </MudDrawer>
 
-    <MudDrawer @bind-Open="@_drawerOpen" 
-               ClipMode="DrawerClipMode.Always" 
-               Elevation="0" 
-               Color="@(_isDarkMode ? Color.Dark : Color.Surface)"
-               Variant="@DrawerVariant.Mini" 
-               Class="border-r border-gray-200 dark:border-gray-800">
-        <NavMenu />
-    </MudDrawer>
+        <MudMainContent>
+            <div class="@($"min-h-screen bg-gradient-to-br {(ParentApp?.IsDarkMode == true ? "from-gray-900 to-gray-800" : "from-gray-50 to-indigo-50")}")">
+                <div class="pt-16">
+                    <NotificationList @bind-IsOpen="_showNotifications" />
+                    @Body
+                </div>
+            </div>
+        </MudMainContent>
+    </MudLayout>
+</div>
 
-    <MudMainContent Class="pt-16">
-        <NotificationList @bind-IsOpen="_showNotifications" />
-        @Body
-    </MudMainContent>
-</MudLayout>
+<style>
+    .app-container {
+        min-height: 100vh;
+    }
+    
+    .app-container.dark {
+        color-scheme: dark;
+    }
+</style>
 
 @code {
+    [CascadingParameter] public App ParentApp { get; set; }
+    
     private bool _drawerOpen = true;
     private bool _showNotifications;
-    private bool _isDarkMode;
-
-    private MudTheme _theme = new MudTheme()
-    {
-        Palette = new PaletteLight()
-        {
-            Primary = "#6366F1",
-            Secondary = "#EC4899",
-            AppbarBackground = "rgba(255,255,255,0.8)",
-            Background = "#F9FAFB",
-            DrawerBackground = "#FFFFFF",
-            Surface = "#FFFFFF",
-            TextPrimary = "#1F2937",
-            TextSecondary = "#4B5563",
-            DrawerText = "#1F2937",
-            DrawerIcon = "#6366F1"
-        },
-        PaletteDark = new PaletteDark()
-        {
-            Primary = "#818CF8",
-            Secondary = "#F472B6",
-            AppbarBackground = "rgba(17,24,39,0.8)",
-            Background = "#111827",
-            DrawerBackground = "#1F2937",
-            Surface = "#F3F4F6",
-            TextPrimary = "#F3F4F6",
-            TextSecondary = "#D1D5DB",
-            DrawerText = "#F3F4F6",
-            DrawerIcon = "#818CF8"
-        },
-        Typography = new Typography()
-        {
-            Default = new Default()
-            {
-                FontFamily = new[] { "Inter", "system-ui", "sans-serif" }
-            },
-            H6 = new H6()
-            {
-                FontFamily = new[] { "Inter", "system-ui", "sans-serif" },
-                FontWeight = 600
-            }
-        }
-    };
 
     private void ToggleDrawer()
     {
@@ -98,6 +70,9 @@
 
     private void ToggleTheme()
     {
-        _isDarkMode = !_isDarkMode;
+        if (ParentApp != null)
+        {
+            ParentApp.IsDarkMode = !ParentApp.IsDarkMode;
+        }
     }
 }

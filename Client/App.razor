@@ -1,21 +1,28 @@
 @using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
 
-<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <MudThemeProvider Theme="_theme" />
-        <MudDialogProvider />
-        <MudSnackbarProvider />
-        <MudPopoverProvider />
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <MudAlert Severity="Severity.Error">Sorry, there's nothing at this address.</MudAlert>
-        </LayoutView>
-    </NotFound>
-</Router>
+<CascadingValue Value="this">
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <MudThemeProvider Theme="_theme" />
+            <MudDialogProvider />
+            <MudSnackbarProvider />
+            <MudPopoverProvider />
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <MudAlert Severity="Severity.Error">Sorry, there's nothing at this address.</MudAlert>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingValue>
+
+<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
 @code {
     private MudTheme _theme = new MudTheme
@@ -34,4 +41,29 @@
             }
         }
     };
+
+    private bool _isDarkMode;
+    private MudThemeProvider _mudThemeProvider;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            StateHasChanged();
+        }
+    }
+
+    public bool IsDarkMode
+    {
+        get => _isDarkMode;
+        set
+        {
+            if (_isDarkMode != value)
+            {
+                _isDarkMode = value;
+                StateHasChanged();
+            }
+        }
+    }
 }
