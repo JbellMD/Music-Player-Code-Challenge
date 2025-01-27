@@ -1,12 +1,31 @@
 @using Microsoft.AspNetCore.Components.Routing
 @using MudBlazor
 
-<MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+<MudNavMenu Color="Color.Primary" Class="py-2">
+    <div class="px-4 py-2">
+        <MudText Typo="Typo.overline" Color="Color.Primary" Class="font-semibold">MENU</MudText>
+    </div>
+    
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.LibraryMusic">
         Songs
     </MudNavLink>
-    <MudNavLink Href="playlists" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QueueMusic">
+    
+    <MudNavLink Href="playlists" Icon="@Icons.Material.Filled.QueueMusic">
         Playlists
+    </MudNavLink>
+
+    <MudDivider Class="my-2" />
+    
+    <div class="px-4 py-2">
+        <MudText Typo="Typo.overline" Color="Color.Primary" Class="font-semibold">LIBRARY</MudText>
+    </div>
+
+    <MudNavLink Icon="@Icons.Material.Filled.Favorite" Disabled="true">
+        Favorites
+    </MudNavLink>
+    
+    <MudNavLink Icon="@Icons.Material.Filled.History" Disabled="true">
+        Recently Played
     </MudNavLink>
 </MudNavMenu>
 

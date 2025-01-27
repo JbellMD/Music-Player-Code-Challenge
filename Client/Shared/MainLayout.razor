@@ -1,22 +1,27 @@
 @inherits LayoutComponentBase
 
-<MudThemeProvider />
+<MudThemeProvider Theme="_theme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
-        <MudText Typo="Typo.h6" Class="ml-4">Music Manager</MudText>
+    <MudAppBar Elevation="0" Color="Color.Transparent" Class="border-b border-gray-200 backdrop-blur-sm">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Dark" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6" Color="Color.Dark" Class="ml-4 font-bold">Music Manager</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" OnClick="@ToggleNotifications" />
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Dark" OnClick="@ToggleNotifications" />
     </MudAppBar>
 
-    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer @bind-Open="@_drawerOpen" 
+               ClipMode="DrawerClipMode.Always" 
+               Elevation="0" 
+               Color="Color.Surface" 
+               Variant="@DrawerVariant.Mini" 
+               Class="border-r border-gray-200">
         <NavMenu />
     </MudDrawer>
 
-    <MudMainContent>
+    <MudMainContent Class="pt-16 bg-gradient-to-br from-purple-50 to-indigo-50 min-h-screen">
         <NotificationList @bind-IsOpen="_showNotifications" />
         @Body
     </MudMainContent>
@@ -25,6 +30,35 @@
 @code {
     private bool _drawerOpen = true;
     private bool _showNotifications;
+
+    private MudTheme _theme = new MudTheme()
+    {
+        Palette = new PaletteLight()
+        {
+            Primary = "#6366F1",
+            Secondary = "#EC4899",
+            AppbarBackground = "rgba(255,255,255,0.8)",
+            Background = "#FFFFFF",
+            DrawerBackground = "#FFFFFF",
+            Surface = "#FFFFFF",
+            TextPrimary = "#1F2937",
+            TextSecondary = "#4B5563",
+            DrawerText = "#1F2937",
+            DrawerIcon = "#6366F1"
+        },
+        Typography = new Typography()
+        {
+            Default = new Default()
+            {
+                FontFamily = new[] { "Inter", "system-ui", "sans-serif" }
+            },
+            H6 = new H6()
+            {
+                FontFamily = new[] { "Inter", "system-ui", "sans-serif" },
+                FontWeight = 600
+            }
+        }
+    };
 
     private void ToggleDrawer()
     {

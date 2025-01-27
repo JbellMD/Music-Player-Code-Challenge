@@ -4,40 +4,68 @@
 
 <MudDrawer @bind-Open="@_isOpen" 
            Anchor="Anchor.Right" 
-           Elevation="1" 
+           Elevation="0"
            Variant="@DrawerVariant.Temporary"
-           ClipMode="DrawerClipMode.Always">
-    <MudDrawerHeader>
-        <MudText Typo="Typo.h6">Notifications</MudText>
+           ClipMode="DrawerClipMode.Always"
+           Class="border-l border-gray-200">
+    <MudDrawerHeader Class="pa-6 pb-2">
+        <MudText Typo="Typo.h6" Class="font-bold">Notifications</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="@(() => IsOpen = false)" />
+        <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                      Color="Color.Default" 
+                      OnClick="@(() => IsOpen = false)" />
     </MudDrawerHeader>
-    <MudList Clickable="true">
+    
+    <MudContainer Class="pa-6 pt-2">
         @if (!_notifications.Any())
         {
-            <MudListItem>
-                <MudText Typo="Typo.body2">No notifications</MudText>
-            </MudListItem>
+            <div class="d-flex flex-column align-center justify-center" style="min-height: 200px;">
+                <MudIcon Icon="@Icons.Material.Filled.Notifications" 
+                        Color="Color.Default" 
+                        Size="Size.Large" 
+                        Class="mb-4" />
+                <MudText Typo="Typo.body1" Color="Color.Secondary" Align="Align.Center">
+                    No notifications yet
+                </MudText>
+            </div>
         }
         else
         {
-            @foreach (var notification in _notifications.OrderByDescending(n => n.CreatedAt))
-            {
-                <MudListItem>
-                    <MudStack>
-                        <MudText Typo="Typo.subtitle1">@notification.Title</MudText>
-                        <MudText Typo="Typo.body2">@notification.Message</MudText>
-                        <MudText Typo="Typo.caption">@notification.CreatedAt.ToLocalTime().ToString("g")</MudText>
-                        @if (!string.IsNullOrEmpty(notification.Link))
-                        {
-                            <MudLink Href="@notification.Link" Target="_blank">View Details</MudLink>
-                        }
-                    </MudStack>
-                </MudListItem>
-                <MudDivider />
-            }
+            <MudList Clickable="true" Class="pa-0">
+                @foreach (var notification in _notifications.OrderByDescending(n => n.CreatedAt))
+                {
+                    <MudPaper Elevation="0" 
+                             Class="mb-4 pa-4 rounded-lg border-2 border-gray-100 transition-all hover:border-primary">
+                        <MudStack>
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Circle" 
+                                        Color="Color.Primary" 
+                                        Size="Size.Small" 
+                                        Class="mr-2" />
+                                <MudText Typo="Typo.subtitle1" Class="font-bold">@notification.Title</MudText>
+                            </div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@notification.Message</MudText>
+                            <div class="d-flex align-center justify-space-between">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @notification.CreatedAt.ToLocalTime().ToString("g")
+                                </MudText>
+                                @if (!string.IsNullOrEmpty(notification.Link))
+                                {
+                                    <MudButton Variant="Variant.Text" 
+                                             Color="Color.Primary" 
+                                             Href="@notification.Link" 
+                                             Target="_blank"
+                                             Size="Size.Small">
+                                        View Details
+                                    </MudButton>
+                                }
+                            </div>
+                        </MudStack>
+                    </MudPaper>
+                }
+            </MudList>
         }
-    </MudList>
+    </MudContainer>
 </MudDrawer>
 
 @code {

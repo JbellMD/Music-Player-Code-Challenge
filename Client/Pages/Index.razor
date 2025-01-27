@@ -4,73 +4,88 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>Music Manager</PageTitle>
-
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-    <MudGrid>
-        <MudItem xs="12">
-            <MudPaper Class="pa-4">
-                <MudToolBar>
-                    <MudText Typo="Typo.h6">Songs</MudText>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchTerm"
-                                Placeholder="Search songs..."
-                                Adornment="Adornment.Start"
-                                AdornmentIcon="@Icons.Material.Filled.Search"
-                                Class="mt-0 mr-2"
-                                @onkeyup="SearchKeyUp" />
-                    <MudButton Color="Color.Primary"
-                              StartIcon="@Icons.Material.Filled.Add"
-                              OnClick="CreateSong">
-                        Add Song
-                    </MudButton>
-                </MudToolBar>
-            </MudPaper>
-        </MudItem>
+    <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-white/80 backdrop-blur-sm">
+        <MudToolBar DisableGutters="true">
+            <MudText Typo="Typo.h5" Class="font-bold">Songs</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchTerm"
+                         Placeholder="Search songs..."
+                         Adornment="Adornment.Start"
+                         AdornmentIcon="@Icons.Material.Filled.Search"
+                         Class="mt-0 mr-2"
+                         Variant="Variant.Outlined"
+                         @onkeyup="SearchKeyUp" />
+            <MudButton Variant="Variant.Filled"
+                      Color="Color.Primary"
+                      StartIcon="@Icons.Material.Filled.Add"
+                      OnClick="CreateSong"
+                      Class="rounded-full px-6">
+                Add Song
+            </MudButton>
+        </MudToolBar>
+    </MudPaper>
 
+    <div class="mt-6">
         @if (songs == null)
         {
-            <MudItem xs="12">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            </MudItem>
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
         }
         else if (!songs.Any())
         {
-            <MudItem xs="12">
-                <MudAlert Severity="Severity.Info">No songs found. Add one to get started!</MudAlert>
-            </MudItem>
+            <MudPaper Elevation="0" Class="pa-8 rounded-lg bg-white/80 backdrop-blur-sm text-center">
+                <MudIcon Icon="@Icons.Material.Filled.MusicNote" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h6" Class="mt-4">No songs found</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">Add your first song to get started!</MudText>
+            </MudPaper>
         }
         else
         {
-            @foreach (var song in songs)
-            {
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard>
-                        <MudCardHeader>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">@song.Title</MudText>
-                                <MudText Typo="Typo.body2">@song.Artist</MudText>
-                            </CardHeaderContent>
-                            <CardHeaderActions>
-                                <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                                    <MudMenuItem OnClick="@(() => EditSong(song))">Edit</MudMenuItem>
-                                    <MudMenuItem OnClick="@(() => DeleteSong(song.Id))">Delete</MudMenuItem>
-                                    <MudMenuItem OnClick="@(() => AddToPlaylist(song))">Add to Playlist</MudMenuItem>
-                                </MudMenu>
-                            </CardHeaderActions>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudText>Album: @song.Album</MudText>
-                            <MudText>Genre: @song.Genre</MudText>
-                        </MudCardContent>
-                        <MudCardActions>
-                            <MudRating @bind-Value="song.Rating" MaxValue="5" Color="Color.Primary" />
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
-            }
+            <MudGrid>
+                @foreach (var song in songs)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-white/80 backdrop-blur-sm transition-all hover:shadow-lg">
+                            <div class="d-flex flex-column h-100">
+                                <div class="d-flex align-center mb-4">
+                                    <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Class="mr-3">
+                                        <MudIcon Icon="@Icons.Material.Filled.Album" />
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.h6" Class="font-bold">@song.Title</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@song.Artist</MudText>
+                                    </div>
+                                </div>
+                                
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Album" Size="Size.Small" Class="mr-2" />@song.Album
+                                </MudText>
+                                
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="mr-2" />@song.Genre
+                                </MudText>
+
+                                <MudDivider Class="my-4" />
+                                
+                                <div class="d-flex justify-space-between mt-auto">
+                                    <MudButton Variant="Variant.Text"
+                                             Color="Color.Primary"
+                                             OnClick="@(() => AddToPlaylist(song))"
+                                             StartIcon="@Icons.Material.Filled.PlaylistAdd">
+                                        Add to Playlist
+                                    </MudButton>
+                                    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Dense="true" AnchorOrigin="Origin.BottomRight">
+                                        <MudMenuItem OnClick="@(() => EditSong(song))">Edit</MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => DeleteSong(song.Id))" Class="text-error">Delete</MudMenuItem>
+                                    </MudMenu>
+                                </div>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
         }
-    </MudGrid>
+    </div>
 </MudContainer>
 
 @code {

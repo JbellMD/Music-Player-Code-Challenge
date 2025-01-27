@@ -4,54 +4,88 @@
 @inject ISongService SongService
 @inject ISnackbar Snackbar
 
-<MudDialog>
+<MudDialog DisableSidePadding="true">
     <DialogContent>
-        <MudForm @ref="_form" @bind-IsValid="@_isValid">
-            <MudTextField @bind-Value="Song.Title"
-                         Label="Title"
-                         Required="true"
-                         RequiredError="Title is required" />
+        <MudContainer Class="pa-6">
+            <MudForm @ref="_form" @bind-IsValid="@_isValid">
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Song.Title"
+                                    Label="Title"
+                                    Required="true"
+                                    RequiredError="Title is required"
+                                    Variant="Variant.Outlined"
+                                    Class="mb-4" />
+                    </MudItem>
 
-            <MudTextField @bind-Value="Song.Artist"
-                         Label="Artist"
-                         Required="true"
-                         RequiredError="Artist is required" />
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Song.Artist"
+                                    Label="Artist"
+                                    Required="true"
+                                    RequiredError="Artist is required"
+                                    Variant="Variant.Outlined"
+                                    Class="mb-4" />
+                    </MudItem>
 
-            <MudTextField @bind-Value="Song.Album"
-                         Label="Album"
-                         Required="true"
-                         RequiredError="Album is required" />
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Song.Album"
+                                    Label="Album"
+                                    Required="true"
+                                    RequiredError="Album is required"
+                                    Variant="Variant.Outlined"
+                                    Class="mb-4" />
+                    </MudItem>
 
-            <MudTextField @bind-Value="Song.Genre"
-                         Label="Genre"
-                         Required="true"
-                         RequiredError="Genre is required" />
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Song.Genre"
+                                    Label="Genre"
+                                    Required="true"
+                                    RequiredError="Genre is required"
+                                    Variant="Variant.Outlined"
+                                    Class="mb-6" />
+                    </MudItem>
 
-            <MudFileUpload T="IBrowserFile" MaxFiles="1" OnFilesChanged="OnFileChanged">
-                <ButtonTemplate>
-                    <MudButton HtmlTag="label"
-                              Variant="Variant.Filled"
-                              Color="Color.Primary"
-                              StartIcon="@Icons.Material.Filled.CloudUpload"
-                              for="@context">
-                        Upload Music File
-                    </MudButton>
-                </ButtonTemplate>
-                <SelectedTemplate>
-                    @if (_selectedFile != null)
-                    {
-                        <MudText>Selected file: @_selectedFile.Name</MudText>
-                    }
-                </SelectedTemplate>
-            </MudFileUpload>
-        </MudForm>
+                    <MudItem xs="12">
+                        <MudPaper Elevation="0" Class="pa-4 rounded-lg border-2 border-dashed">
+                            <MudFileUpload T="IBrowserFile" MaxFiles="1" OnFilesChanged="OnFileChanged">
+                                <ButtonTemplate>
+                                    <MudButton HtmlTag="label"
+                                             Variant="Variant.Filled"
+                                             Color="Color.Primary"
+                                             StartIcon="@Icons.Material.Filled.CloudUpload"
+                                             for="@context"
+                                             Class="rounded-full px-6">
+                                        Upload Music File
+                                    </MudButton>
+                                </ButtonTemplate>
+                                <SelectedTemplate>
+                                    @if (_selectedFile != null)
+                                    {
+                                        <MudChip Color="Color.Primary" 
+                                                Icon="@Icons.Material.Filled.AudioFile"
+                                                Label="true"
+                                                Class="mt-2">
+                                            @_selectedFile.Name
+                                        </MudChip>
+                                    }
+                                </SelectedTemplate>
+                            </MudFileUpload>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+        </MudContainer>
     </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="@Cancel" Variant="Variant.Text" Color="Color.Default">Cancel</MudButton>
+    <DialogActions Class="pa-6 pt-2">
+        <MudButton OnClick="@Cancel" 
+                  Variant="Variant.Text" 
+                  Color="Color.Default"
+                  Class="rounded-full px-6">Cancel</MudButton>
         <MudButton Color="Color.Primary"
                   Variant="Variant.Filled"
                   Disabled="@(!_isValid || _isSubmitting)"
-                  OnClick="@Submit">
+                  OnClick="@Submit"
+                  Class="rounded-full px-6">
             @if (_isSubmitting)
             {
                 <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
