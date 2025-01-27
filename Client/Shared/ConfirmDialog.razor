@@ -1,12 +1,21 @@
 @using MudBlazor
 
-<MudDialog>
+<MudDialog DisableSidePadding="true">
     <DialogContent>
-        <MudText>@ContentText</MudText>
+        <div class="pa-6">
+            <MudText>@ContentText</MudText>
+        </div>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="@Color" OnClick="Submit">@ButtonText</MudButton>
+        <div class="pa-6 pt-2 d-flex gap-2">
+            <MudButton OnClick="Cancel"
+                      Variant="Variant.Text"
+                      Class="rounded-full px-6">Cancel</MudButton>
+            <MudButton Color="@Color"
+                      OnClick="Submit"
+                      Variant="Variant.Filled"
+                      Class="rounded-full px-6">@ButtonText</MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 

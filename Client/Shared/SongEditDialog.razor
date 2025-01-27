@@ -76,26 +76,28 @@
             </MudForm>
         </MudContainer>
     </DialogContent>
-    <DialogActions Class="pa-6 pt-2">
-        <MudButton OnClick="@Cancel" 
-                  Variant="Variant.Text" 
-                  Color="Color.Default"
-                  Class="rounded-full px-6">Cancel</MudButton>
-        <MudButton Color="Color.Primary"
-                  Variant="Variant.Filled"
-                  Disabled="@(!_isValid || _isSubmitting)"
-                  OnClick="@Submit"
-                  Class="rounded-full px-6">
-            @if (_isSubmitting)
-            {
-                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                <MudText Class="ms-2">Saving</MudText>
-            }
-            else
-            {
-                <MudText>Save</MudText>
-            }
-        </MudButton>
+    <DialogActions>
+        <div class="pa-6 pt-2 d-flex gap-2">
+            <MudButton OnClick="@Cancel" 
+                      Variant="Variant.Text" 
+                      Color="Color.Default"
+                      Class="rounded-full px-6">Cancel</MudButton>
+            <MudButton Color="Color.Primary"
+                      Variant="Variant.Filled"
+                      Disabled="@(!_isValid || _isSubmitting)"
+                      OnClick="@Submit"
+                      Class="rounded-full px-6">
+                @if (_isSubmitting)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Saving</MudText>
+                }
+                else
+                {
+                    <MudText>Save</MudText>
+                }
+            </MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 

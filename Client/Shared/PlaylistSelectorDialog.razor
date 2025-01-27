@@ -2,33 +2,44 @@
 @inject IPlaylistService PlaylistService
 @inject ISnackbar Snackbar
 
-<MudDialog>
+<MudDialog DisableSidePadding="true">
     <DialogContent>
-        <MudSelect T="int" Label="Select Playlist" @bind-Value="_selectedPlaylistId">
-            @if (_playlists != null)
-            {
-                @foreach (var playlist in _playlists)
+        <div class="pa-6">
+            <MudSelect T="int" 
+                      Label="Select Playlist" 
+                      @bind-Value="_selectedPlaylistId"
+                      Variant="Variant.Outlined">
+                @if (_playlists != null)
                 {
-                    <MudSelectItem Value="@playlist.Id">@playlist.Name</MudSelectItem>
+                    @foreach (var playlist in _playlists)
+                    {
+                        <MudSelectItem Value="@playlist.Id">@playlist.Name</MudSelectItem>
+                    }
                 }
-            }
-        </MudSelect>
+            </MudSelect>
+        </div>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" 
-                   OnClick="Submit" 
-                   Disabled="@(_selectedPlaylistId == 0 || _isSubmitting)">
-            @if (_isSubmitting)
-            {
-                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                <MudText Class="ms-2">Adding</MudText>
-            }
-            else
-            {
-                <MudText>Add</MudText>
-            }
-        </MudButton>
+        <div class="pa-6 pt-2 d-flex gap-2">
+            <MudButton OnClick="Cancel"
+                      Variant="Variant.Text"
+                      Class="rounded-full px-6">Cancel</MudButton>
+            <MudButton Color="Color.Primary" 
+                      OnClick="Submit"
+                      Variant="Variant.Filled"
+                      Class="rounded-full px-6"
+                      Disabled="@(_selectedPlaylistId == 0 || _isSubmitting)">
+                @if (_isSubmitting)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Adding</MudText>
+                }
+                else
+                {
+                    <MudText>Add</MudText>
+                }
+            </MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 
