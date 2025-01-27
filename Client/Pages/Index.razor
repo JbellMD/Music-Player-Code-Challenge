@@ -5,17 +5,20 @@
 @inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-    <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-white/80 backdrop-blur-sm">
+    <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
         <MudToolBar DisableGutters="true">
             <MudText Typo="Typo.h5" Class="font-bold">Songs</MudText>
             <MudSpacer />
-            <MudTextField @bind-Value="searchTerm"
-                         Placeholder="Search songs..."
-                         Adornment="Adornment.Start"
-                         AdornmentIcon="@Icons.Material.Filled.Search"
-                         Class="mt-0 mr-2"
-                         Variant="Variant.Outlined"
-                         @onkeyup="SearchKeyUp" />
+            <div class="flex-grow mx-4" style="max-width: 600px;">
+                <MudTextField @bind-Value="searchTerm"
+                            Placeholder="Search songs..."
+                            Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.Search"
+                            Variant="Variant.Outlined"
+                            Class="mt-0"
+                            FullWidth="true"
+                            @onkeyup="SearchKeyUp" />
+            </div>
             <MudButton Variant="Variant.Filled"
                       Color="Color.Primary"
                       StartIcon="@Icons.Material.Filled.Add"
@@ -33,7 +36,7 @@
         }
         else if (!songs.Any())
         {
-            <MudPaper Elevation="0" Class="pa-8 rounded-lg bg-white/80 backdrop-blur-sm text-center">
+            <MudPaper Elevation="0" Class="pa-8 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-center">
                 <MudIcon Icon="@Icons.Material.Filled.MusicNote" Color="Color.Primary" Size="Size.Large" />
                 <MudText Typo="Typo.h6" Class="mt-4">No songs found</MudText>
                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">Add your first song to get started!</MudText>
@@ -45,7 +48,7 @@
                 @foreach (var song in songs)
                 {
                     <MudItem xs="12" sm="6" md="4">
-                        <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-white/80 backdrop-blur-sm transition-all hover:shadow-lg">
+                        <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm transition-all hover:shadow-lg">
                             <div class="d-flex flex-column h-100">
                                 <div class="d-flex align-center mb-4">
                                     <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Class="mr-3">

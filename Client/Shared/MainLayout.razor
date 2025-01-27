@@ -1,15 +1,20 @@
 @inherits LayoutComponentBase
 
-<MudThemeProvider Theme="_theme" />
+<MudThemeProvider Theme="_theme" @bind-IsDarkMode="_isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="0" Color="Color.Transparent" Class="border-b border-gray-200 backdrop-blur-sm">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Dark" Edge="Edge.Start" OnClick="@ToggleDrawer" />
-        <MudText Typo="Typo.h6" Color="Color.Dark" Class="ml-4 font-bold">Music Manager</MudText>
+    <MudAppBar Elevation="0" Color="Color.Transparent" Class="border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="@(_isDarkMode ? Color.Surface : Color.Dark)" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6" Color="@(_isDarkMode ? Color.Surface : Color.Dark)" Class="ml-4 font-bold">Music Manager</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Dark" OnClick="@ToggleNotifications" />
+        <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
+                      Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
+                      OnClick="@ToggleTheme" />
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
+                      Color="@(_isDarkMode ? Color.Surface : Color.Dark)" 
+                      OnClick="@ToggleNotifications" />
     </MudAppBar>
 
     <MudDrawer @bind-Open="@_drawerOpen" 
@@ -17,11 +22,11 @@
                Elevation="0" 
                Color="Color.Surface" 
                Variant="@DrawerVariant.Mini" 
-               Class="border-r border-gray-200">
+               Class="border-r border-gray-200 dark:border-gray-800">
         <NavMenu />
     </MudDrawer>
 
-    <MudMainContent Class="pt-16 bg-gradient-to-br from-purple-50 to-indigo-50 min-h-screen">
+    <MudMainContent Class="pt-16 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-indigo-900 min-h-screen">
         <NotificationList @bind-IsOpen="_showNotifications" />
         @Body
     </MudMainContent>
@@ -30,6 +35,7 @@
 @code {
     private bool _drawerOpen = true;
     private bool _showNotifications;
+    private bool _isDarkMode;
 
     private MudTheme _theme = new MudTheme()
     {
@@ -45,6 +51,19 @@
             TextSecondary = "#4B5563",
             DrawerText = "#1F2937",
             DrawerIcon = "#6366F1"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#818CF8",
+            Secondary = "#F472B6",
+            AppbarBackground = "rgba(31,41,55,0.8)",
+            Background = "#111827",
+            DrawerBackground = "#111827",
+            Surface = "#1F2937",
+            TextPrimary = "#F3F4F6",
+            TextSecondary = "#D1D5DB",
+            DrawerText = "#F3F4F6",
+            DrawerIcon = "#818CF8"
         },
         Typography = new Typography()
         {
@@ -68,5 +87,10 @@
     private void ToggleNotifications()
     {
         _showNotifications = !_showNotifications;
+    }
+
+    private void ToggleTheme()
+    {
+        _isDarkMode = !_isDarkMode;
     }
 }
