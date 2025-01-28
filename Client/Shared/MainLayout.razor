@@ -21,15 +21,16 @@
             <MudSpacer />
             <MudToggleIconButton
                 Toggled="@ThemeService.IsDarkMode"
-                ToggledChanged="@(async (value) => await OnThemeToggled(value))"
+                ToggledChanged="OnThemeToggled"
                 Icon="@Icons.Material.Filled.LightMode"
                 Color="@(ThemeService.IsDarkMode ? Color.Surface : Color.Dark)"
                 Title="Light Mode"
                 ToggledIcon="@Icons.Material.Filled.DarkMode"
                 ToggledTitle="Dark Mode" />
-            <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
-                      Color="@(ThemeService.IsDarkMode == true ? Color.Surface : Color.Dark)" 
-                      OnClick="@ToggleNotifications" />
+            <MudIconButton 
+                Icon="@Icons.Material.Filled.Notifications" 
+                Color="@(ThemeService.IsDarkMode ? Color.Surface : Color.Dark)" 
+                OnClick="@(() => _showNotifications = !_showNotifications)" />
         </MudAppBar>
 
         <MudDrawer 
@@ -65,29 +66,20 @@
 </style>
 
 @code {
-    [CascadingParameter]
-    public App? ParentApp { get; set; }
-
     private bool _drawerOpen = true;
     private bool _showNotifications;
-    private bool _isDarkMode;
 
     protected override void OnInitialized()
     {
-        _isDarkMode = ThemeService.IsDarkMode;
         ThemeService.ThemeChanged += OnThemeChanged;
     }
 
     private void OnThemeChanged(object? sender, bool isDarkMode)
     {
-        if (_isDarkMode != isDarkMode)
-        {
-            _isDarkMode = isDarkMode;
-            StateHasChanged();
-        }
+        StateHasChanged();
     }
 
-    private async Task OnThemeToggled(bool isDarkMode)
+    private void OnThemeToggled(bool isDarkMode)
     {
         ThemeService.IsDarkMode = isDarkMode;
         StateHasChanged();
@@ -101,18 +93,5 @@
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
-    }
-
-    private void ToggleNotifications()
-    {
-        _showNotifications = !_showNotifications;
-    }
-
-    private void ToggleTheme()
-    {
-        if (ParentApp != null)
-        {
-            ParentApp.IsDarkMode = !ParentApp.IsDarkMode;
-        }
     }
 }
