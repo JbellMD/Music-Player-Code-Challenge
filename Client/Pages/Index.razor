@@ -259,19 +259,19 @@
         bottom: -5px;
     }
     
-    @keyframes float1 {
+    ::deep @@keyframes float1 {
         0% { transform: translateY(0px); opacity: 0.5; }
         50% { transform: translateY(-10px); opacity: 1; }
         100% { transform: translateY(0px); opacity: 0.5; }
     }
     
-    @keyframes float2 {
+    ::deep @@keyframes float2 {
         0% { transform: translateY(0px); opacity: 0.5; }
         50% { transform: translateY(-8px); opacity: 1; }
         100% { transform: translateY(0px); opacity: 0.5; }
     }
     
-    @keyframes float3 {
+    ::deep @@keyframes float3 {
         0% { transform: translateY(0px); opacity: 0.5; }
         50% { transform: translateY(-6px); opacity: 1; }
         100% { transform: translateY(0px); opacity: 0.5; }
@@ -287,7 +287,7 @@
 </style>
 
 @code {
-    private List<Song>? songs;
+    private IEnumerable<Song>? songs;
     private string searchTerm = "";
     private bool isLoading;
 
