@@ -180,10 +180,8 @@
 <style>
     .page-container {
         padding: 1.5rem;
-    }
-
-    .page-container.light {
         background-color: #f8fafc;
+        color: #1e293b;
     }
 
     .page-container.dark {
@@ -192,12 +190,15 @@
     }
 
     .empty-state {
-        background-color: white;
+        background-color: #ffffff;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
     }
 
     .dark .empty-state {
         background-color: #1e293b;
         color: #e2e8f0;
+        border: 1px solid #334155;
     }
 
     .quick-tip-card {
@@ -205,23 +206,29 @@
         padding: 1rem;
         border-radius: 0.5rem;
         text-align: center;
-        background-color: #f1f5f9;
+        background-color: #ffffff;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
     }
 
     .dark .quick-tip-card {
         background-color: #1e293b;
         color: #e2e8f0;
+        border: 1px solid #334155;
     }
 
     .song-list-container {
         padding: 1rem;
         border-radius: 0.5rem;
-        background-color: white;
+        background-color: #ffffff;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
     }
 
     .dark .song-list-container {
         background-color: #1e293b;
         color: #e2e8f0;
+        border: 1px solid #334155;
     }
 
     .song-list-item {
@@ -231,11 +238,59 @@
     }
 
     .song-list-item:hover {
-        background-color: #f1f5f9;
+        background-color: #f8fafc;
     }
 
     .dark .song-list-item:hover {
         background-color: #334155;
+    }
+
+    :deep .mud-input {
+        color: #1e293b;
+    }
+
+    :deep .mud-input-outlined {
+        border-color: #e2e8f0;
+    }
+
+    :deep .mud-input-outlined:hover {
+        border-color: #cbd5e1;
+    }
+
+    :deep .mud-typography {
+        color: #1e293b;
+    }
+
+    :deep .mud-text-secondary {
+        color: #64748b !important;
+    }
+
+    :deep .mud-icon-button:not(.mud-icon-button-color-primary):not(.mud-icon-button-color-secondary) {
+        color: #1e293b;
+    }
+
+    :deep .mud-list-subheader {
+        background-color: #ffffff;
+        color: #1e293b;
+    }
+
+    :deep .mud-chip {
+        background-color: #f1f5f9;
+        color: #1e293b;
+    }
+
+    :deep .mud-input-adornment {
+        color: #64748b;
+    }
+
+    :deep .mud-button-outlined {
+        border-color: #e2e8f0;
+        color: #1e293b;
+    }
+
+    :deep .mud-button-outlined:hover {
+        border-color: #cbd5e1;
+        background-color: rgba(0, 0, 0, 0.05);
     }
 
     .dark :deep .mud-input {
