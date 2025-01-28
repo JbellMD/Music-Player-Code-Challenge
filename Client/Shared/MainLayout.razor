@@ -1,45 +1,23 @@
 @inherits LayoutComponentBase
 @inject IThemeService ThemeService
 
+<MudThemeProvider @bind-IsDarkMode="@ThemeService.IsDarkMode" Theme="@_theme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
 <div class="@($"app-container {(ThemeService.IsDarkMode ? "dark" : "")}")">
     <MudLayout>
-        <MudAppBar 
-            Elevation="0"
-            Color="@(ThemeService.IsDarkMode ? Color.Dark : Color.Surface)"
-            Class="border-b border-gray-200 dark:border-gray-800">
-            <MudIconButton 
-                Icon="@Icons.Material.Filled.Menu" 
-                Color="@(ThemeService.IsDarkMode ? Color.Surface : Color.Dark)"
-                Edge="Edge.Start" 
-                OnClick="@DrawerToggle" />
-            <MudText 
-                Typo="Typo.h6"
-                Color="@(ThemeService.IsDarkMode ? Color.Surface : Color.Dark)"
-                Class="ml-4 font-weight-bold">
-                Music Manager
-            </MudText>
+        <MudAppBar Elevation="1" Color="@(ThemeService.IsDarkMode ? Color.Dark : Color.Surface)" Class="border-b border-gray-200 dark:border-gray-800">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <MudText Typo="Typo.h6" Class="ml-4">Music Manager</MudText>
             <MudSpacer />
-            <MudToggleIconButton
-                Toggled="@ThemeService.IsDarkMode"
-                ToggledChanged="OnThemeToggled"
-                Icon="@Icons.Material.Filled.LightMode"
-                Color="@(ThemeService.IsDarkMode ? Color.Surface : Color.Dark)"
-                Title="Light Mode"
-                ToggledIcon="@Icons.Material.Filled.DarkMode"
-                ToggledTitle="Dark Mode" />
-            <MudIconButton 
-                Icon="@Icons.Material.Filled.Notifications" 
-                Color="@(ThemeService.IsDarkMode ? Color.Surface : Color.Dark)" 
-                OnClick="@(() => _showNotifications = !_showNotifications)" />
+            <MudIconButton Icon="@(ThemeService.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
+                          Color="Color.Inherit" 
+                          OnClick="@ToggleTheme" />
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" OnClick="@(() => _showNotifications = !_showNotifications)" />
         </MudAppBar>
 
-        <MudDrawer 
-            @bind-Open="_drawerOpen"
-            ClipMode="DrawerClipMode.Always"
-            Elevation="0"
-            Color="@(ThemeService.IsDarkMode ? Color.Dark : Color.Surface)"
-            Variant="@DrawerVariant.Mini"
-            Class="border-r border-gray-200 dark:border-gray-800">
+        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Color="@(ThemeService.IsDarkMode ? Color.Dark : Color.Surface)" Variant="@DrawerVariant.Mini" Class="border-r border-gray-200 dark:border-gray-800">
             <NavMenu />
         </MudDrawer>
 
@@ -69,6 +47,40 @@
     private bool _drawerOpen = true;
     private bool _showNotifications;
 
+    private MudTheme _theme = new MudTheme
+    {
+        Palette = new PaletteLight
+        {
+            Primary = "#6366f1",
+            Secondary = "#ec4899",
+            Background = "#f8fafc",
+            Surface = "#ffffff",
+            AppbarBackground = "#6366f1",
+            DrawerBackground = "#ffffff",
+            DrawerText = "#1e293b",
+            TextPrimary = "#1e293b",
+            TextSecondary = "#64748b",
+            ActionDefault = "#1e293b",
+            BackgroundGrey = "#f1f5f9",
+            DrawerIcon = "#1e293b"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#6366f1",
+            Secondary = "#ec4899",
+            Background = "#0f172a",
+            Surface = "#1e293b",
+            AppbarBackground = "#1e293b",
+            DrawerBackground = "#0f172a",
+            DrawerText = "#e2e8f0",
+            TextPrimary = "#e2e8f0",
+            TextSecondary = "#94a3b8",
+            ActionDefault = "#e2e8f0",
+            BackgroundGrey = "#1e293b",
+            DrawerIcon = "#e2e8f0"
+        }
+    };
+
     protected override void OnInitialized()
     {
         ThemeService.ThemeChanged += OnThemeChanged;
@@ -79,19 +91,18 @@
         StateHasChanged();
     }
 
-    private void OnThemeToggled(bool isDarkMode)
+    private void DrawerToggle()
     {
-        ThemeService.IsDarkMode = isDarkMode;
-        StateHasChanged();
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void ToggleTheme()
+    {
+        ThemeService.IsDarkMode = !ThemeService.IsDarkMode;
     }
 
     public void Dispose()
     {
         ThemeService.ThemeChanged -= OnThemeChanged;
-    }
-
-    private void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
     }
 }

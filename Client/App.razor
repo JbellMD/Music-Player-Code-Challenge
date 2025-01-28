@@ -2,7 +2,7 @@
 @inject IThemeService ThemeService
 
 <CascadingValue Value="this">
-    <MudThemeProvider Theme="_theme" />
+    <MudThemeProvider @bind-IsDarkMode="@ThemeService.IsDarkMode" Theme="@_theme" />
     <MudDialogProvider />
     <MudSnackbarProvider />
 
@@ -14,27 +14,46 @@
         <NotFound>
             <PageTitle>Not found</PageTitle>
             <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
+                <MudText Typo="Typo.h4" Class="mb-4">Sorry, there's nothing at this address.</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="">Return Home</MudButton>
             </LayoutView>
         </NotFound>
     </Router>
 </CascadingValue>
 
 @code {
-    private MudTheme _theme = new();
-
-    protected override void OnInitialized()
+    private MudTheme _theme = new MudTheme
     {
-        ThemeService.ThemeChanged += OnThemeChanged;
-    }
-
-    private void OnThemeChanged(object? sender, bool isDarkMode)
-    {
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        ThemeService.ThemeChanged -= OnThemeChanged;
-    }
+        Palette = new PaletteLight
+        {
+            Primary = "#6366f1",
+            Secondary = "#ec4899",
+            Background = "#f8fafc",
+            Surface = "#ffffff",
+            AppbarBackground = "#6366f1",
+            DrawerBackground = "#ffffff",
+            DrawerText = "#1e293b",
+            TextPrimary = "#1e293b",
+            TextSecondary = "#64748b",
+            ActionDefault = "#1e293b",
+            BackgroundGrey = "#f1f5f9",
+            DrawerIcon = "#1e293b"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#6366f1",
+            Secondary = "#ec4899",
+            Background = "#0f172a",
+            Surface = "#1e293b",
+            AppbarBackground = "#1e293b",
+            DrawerBackground = "#0f172a",
+            DrawerText = "#e2e8f0",
+            TextPrimary = "#e2e8f0",
+            TextSecondary = "#94a3b8",
+            ActionDefault = "#e2e8f0",
+            BackgroundGrey = "#1e293b",
+            DrawerIcon = "#e2e8f0",
+            Dark = true
+        }
+    };
 }
