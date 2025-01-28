@@ -1,6 +1,11 @@
 @using Microsoft.AspNetCore.Components.Web
+@inject IThemeService ThemeService
 
 <CascadingValue Value="this">
+    <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
+
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -15,21 +20,20 @@
     </Router>
 </CascadingValue>
 
-<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" />
-<MudDialogProvider />
-<MudSnackbarProvider />
-
 @code {
+    private MudTheme _theme = new();
     private bool _isDarkMode;
-    private MudThemeProvider _mudThemeProvider = null!;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender && _mudThemeProvider != null)
-        {
-            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
-            StateHasChanged();
-        }
+        _isDarkMode = ThemeService.IsDarkMode;
+        ThemeService.ThemeChanged += OnThemeChanged;
+    }
+
+    private void OnThemeChanged(object? sender, bool isDarkMode)
+    {
+        _isDarkMode = isDarkMode;
+        StateHasChanged();
     }
 
     public bool IsDarkMode
@@ -40,7 +44,7 @@
             if (_isDarkMode != value)
             {
                 _isDarkMode = value;
-                StateHasChanged();
+                ThemeService.IsDarkMode = value;
             }
         }
     }
