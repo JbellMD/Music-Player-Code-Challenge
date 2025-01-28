@@ -49,8 +49,9 @@ namespace music_manager_starter.Client.Services
                 }
                 else
                 {
-                    // Check system preference
-                    _isDarkMode = await _jsRuntime.InvokeAsync<bool>("window.matchMedia", "(prefers-color-scheme: dark)").Match;
+                    // Check system preference using a JS function
+                    _isDarkMode = await _jsRuntime.InvokeAsync<bool>("eval", 
+                        "window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches");
                 }
                 
                 ThemeChanged?.Invoke(this, _isDarkMode);
