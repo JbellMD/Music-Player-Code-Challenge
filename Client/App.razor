@@ -2,7 +2,7 @@
 @inject IThemeService ThemeService
 
 <CascadingValue Value="this">
-    <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+    <MudThemeProvider Theme="_theme" />
     <MudDialogProvider />
     <MudSnackbarProvider />
 
@@ -22,30 +22,19 @@
 
 @code {
     private MudTheme _theme = new();
-    private bool _isDarkMode;
 
     protected override void OnInitialized()
     {
-        _isDarkMode = ThemeService.IsDarkMode;
         ThemeService.ThemeChanged += OnThemeChanged;
     }
 
     private void OnThemeChanged(object? sender, bool isDarkMode)
     {
-        _isDarkMode = isDarkMode;
         StateHasChanged();
     }
 
-    public bool IsDarkMode
+    public void Dispose()
     {
-        get => _isDarkMode;
-        set
-        {
-            if (_isDarkMode != value)
-            {
-                _isDarkMode = value;
-                ThemeService.IsDarkMode = value;
-            }
-        }
+        ThemeService.ThemeChanged -= OnThemeChanged;
     }
 }
