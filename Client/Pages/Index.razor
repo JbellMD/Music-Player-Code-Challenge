@@ -3,37 +3,37 @@
 @inject ISongService SongService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IThemeService ThemeService
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-2">
-    <div class="d-flex align-center gap-4 mb-4">
-        <MudText Typo="Typo.h5" Color="Color.Primary" Class="font-weight-bold">Songs</MudText>
+<div class="@($"page-container {(ThemeService.IsDarkMode ? "dark" : "light")}")">
+    <div class="d-flex align-center gap-4">
+        <MudText Typo="Typo.h5" Color="Color.Primary">Songs</MudText>
         <MudTextField 
             @bind-Value="searchTerm" 
             Placeholder="Search songs..." 
             Adornment="Adornment.Start" 
             AdornmentIcon="@Icons.Material.Filled.Search"
             Class="flex-grow-1"
-            Variant="Variant.Outlined"
-            Margin="Margin.Dense" />
+            Variant="Variant.Outlined" />
         <MudButton 
             Variant="Variant.Filled" 
-            Color="Color.Primary" 
+            Color="Color.Primary"
             StartIcon="@Icons.Material.Filled.Add"
             OnClick="AddNewSong">
             ADD SONG
         </MudButton>
     </div>
 
-    <div class="position-relative min-height-500">
+    <div class="position-relative min-height-500 mt-4">
         @if (isLoading)
         {
-            <div class="d-flex justify-center align-center" style="min-height: 500px;">
+            <div class="d-flex justify-center align-center min-height-500">
                 <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
             </div>
         }
         else if (songs == null || !songs.Any())
         {
-            <MudPaper Class="pa-8 rounded-lg bg-surface dark:bg-gray-800 position-relative overflow-hidden">
+            <MudPaper Class="pa-8 rounded-lg empty-state">
                 <div class="d-flex flex-column align-center text-center max-width-sm mx-auto">
                     <div class="position-relative mb-6" style="width: 80px; height: 80px;">
                         <MudIcon Icon="@Icons.Material.Filled.Album" 
@@ -58,14 +58,14 @@
                     <div class="d-flex gap-3 mb-8">
                         <MudButton 
                             Variant="Variant.Filled" 
-                            Color="Color.Primary" 
+                            Color="Color.Primary"
                             StartIcon="@Icons.Material.Filled.Add"
                             OnClick="AddNewSong">
                             ADD YOUR FIRST SONG
                         </MudButton>
                         <MudButton 
                             Variant="Variant.Outlined" 
-                            Color="Color.Primary" 
+                            Color="Color.Primary"
                             StartIcon="@Icons.Material.Filled.PlaylistAdd">
                             CREATE PLAYLIST
                         </MudButton>
@@ -73,7 +73,7 @@
 
                     <MudText Typo="Typo.h6" Class="mb-4">Quick Tips</MudText>
                     <div class="d-flex gap-4 justify-center flex-wrap">
-                        <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-surface-light dark:bg-gray-900 text-center" Style="width: 200px;">
+                        <MudPaper Elevation="0" Class="quick-tip-card">
                             <MudIcon Icon="@Icons.Material.Filled.CloudUpload" 
                                     Color="Color.Primary" 
                                     Size="Size.Large"
@@ -84,7 +84,7 @@
                             </MudText>
                         </MudPaper>
 
-                        <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-surface-light dark:bg-gray-900 text-center" Style="width: 200px;">
+                        <MudPaper Elevation="0" Class="quick-tip-card">
                             <MudIcon Icon="@Icons.Material.Filled.PlaylistAdd" 
                                     Color="Color.Primary" 
                                     Size="Size.Large"
@@ -95,7 +95,7 @@
                             </MudText>
                         </MudPaper>
 
-                        <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-surface-light dark:bg-gray-900 text-center" Style="width: 200px;">
+                        <MudPaper Elevation="0" Class="quick-tip-card">
                             <MudIcon Icon="@Icons.Material.Filled.Favorite" 
                                     Color="Color.Primary" 
                                     Size="Size.Large"
@@ -111,7 +111,7 @@
         }
         else
         {
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg bg-surface dark:bg-gray-800">
+            <MudPaper Elevation="0" Class="song-list-container">
                 <MudList Clickable="true" Class="pa-0">
                     <MudListSubheader Class="px-4 d-flex gap-4 align-center">
                         <MudIcon Icon="@Icons.Material.Filled.AudioFile" Color="Color.Primary" />
@@ -123,7 +123,7 @@
                     
                     @foreach (var song in songs)
                     {
-                        <MudListItem Class="px-4 rounded-lg hover:bg-surface-light dark:hover:bg-gray-700 transition-all">
+                        <MudListItem Class="song-list-item">
                             <div class="d-flex gap-4 align-center py-2">
                                 <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
                                     <MudIcon Icon="@Icons.Material.Filled.MusicNote" Size="Size.Small" />
@@ -175,9 +175,65 @@
             </MudPaper>
         }
     </div>
-</MudContainer>
+</div>
 
 <style>
+    .page-container {
+        padding: 1.5rem;
+    }
+
+    .page-container.light {
+        background-color: #f8fafc;
+    }
+
+    .page-container.dark {
+        background-color: #1e293b;
+    }
+
+    .empty-state {
+        background-color: white;
+    }
+
+    .dark .empty-state {
+        background-color: #0f172a;
+    }
+
+    .quick-tip-card {
+        width: 200px;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        background-color: #f1f5f9;
+    }
+
+    .dark .quick-tip-card {
+        background-color: #1e293b;
+    }
+
+    .song-list-container {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: white;
+    }
+
+    .dark .song-list-container {
+        background-color: #0f172a;
+    }
+
+    .song-list-item {
+        padding: 0 1rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease;
+    }
+
+    .song-list-item:hover {
+        background-color: #f1f5f9;
+    }
+
+    .dark .song-list-item:hover {
+        background-color: #1e293b;
+    }
+
     ::deep .music-icon-large {
         font-size: 64px;
     }
@@ -203,19 +259,19 @@
         bottom: -5px;
     }
     
-    @@keyframes float1 {
+    @keyframes float1 {
         0% { transform: translateY(0px); opacity: 0.5; }
         50% { transform: translateY(-10px); opacity: 1; }
         100% { transform: translateY(0px); opacity: 0.5; }
     }
     
-    @@keyframes float2 {
+    @keyframes float2 {
         0% { transform: translateY(0px); opacity: 0.5; }
         50% { transform: translateY(-8px); opacity: 1; }
         100% { transform: translateY(0px); opacity: 0.5; }
     }
     
-    @@keyframes float3 {
+    @keyframes float3 {
         0% { transform: translateY(0px); opacity: 0.5; }
         50% { transform: translateY(-6px); opacity: 1; }
         100% { transform: translateY(0px); opacity: 0.5; }
@@ -228,21 +284,12 @@
     ::deep .min-height-500 {
         min-height: 500px;
     }
-
-    ::deep .bg-surface-light {
-        background-color: rgba(255, 255, 255, 0.5);
-    }
-
-    .dark ::deep .bg-surface-light {
-        background-color: rgba(30, 41, 59, 0.5);
-    }
 </style>
 
 @code {
-    private List<Song> songs = new();
+    private List<Song>? songs;
     private string searchTerm = "";
-    private bool isLoading = false;
-    private Timer? searchTimer;
+    private bool isLoading;
 
     protected override async Task OnInitializedAsync()
     {
@@ -254,8 +301,7 @@
         isLoading = true;
         try
         {
-            var result = await SongService.GetSongsAsync(searchTerm);
-            songs = result.ToList();
+            songs = await SongService.GetSongsAsync();
         }
         catch (Exception ex)
         {
@@ -270,7 +316,7 @@
     private async Task AddNewSong()
     {
         var parameters = new DialogParameters { ["Song"] = new Song() };
-        var dialog = await DialogService.ShowAsync<SongEditDialog>("Create Song", parameters);
+        var dialog = await DialogService.ShowAsync<SongEditDialog>("Add Song", parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)
@@ -308,38 +354,13 @@
             try
             {
                 await SongService.DeleteSongAsync(id);
-                Snackbar.Add("Song deleted successfully", Severity.Success);
                 await LoadSongs();
+                Snackbar.Add("Song deleted successfully", Severity.Success);
             }
             catch (Exception ex)
             {
                 Snackbar.Add($"Error deleting song: {ex.Message}", Severity.Error);
             }
         }
-    }
-
-    private async Task AddToPlaylist(Song song)
-    {
-        var parameters = new DialogParameters { ["Song"] = song };
-        var dialog = await DialogService.ShowAsync<PlaylistSelectorDialog>("Add to Playlist", parameters);
-        var result = await dialog.Result;
-
-        if (!result.Canceled)
-        {
-            Snackbar.Add("Song added to playlist successfully", Severity.Success);
-        }
-    }
-
-    private void SearchKeyUp(KeyboardEventArgs e)
-    {
-        searchTimer?.Dispose();
-        searchTimer = new Timer(async _ =>
-        {
-            await InvokeAsync(async () =>
-            {
-                await LoadSongs();
-                StateHasChanged();
-            });
-        }, null, 500, Timeout.Infinite);
     }
 }
