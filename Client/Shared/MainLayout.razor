@@ -23,7 +23,7 @@
 
         <MudMainContent>
             <div class="@($"min-h-screen bg-gradient-to-br {(ThemeService.IsDarkMode ? "from-gray-900 to-gray-800" : "from-gray-50 to-white")}")">
-                <div class="pt-16">
+                <div class="pt-4">
                     <NotificationList @bind-IsOpen="_showNotifications" />
                     @Body
                 </div>

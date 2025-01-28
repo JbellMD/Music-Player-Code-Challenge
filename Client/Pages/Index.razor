@@ -5,10 +5,10 @@
 @inject ISnackbar Snackbar
 @inject IThemeService ThemeService
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-2">
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-0 mt-2">
     <MudGrid>
         <MudItem xs="12">
-            <div class="page-container pt-2">
+            <div class="page-container">
                 <div class="d-flex align-center gap-4">
                     <MudText Typo="Typo.h5" Color="Color.Primary">Songs</MudText>
                     <MudTextField 
@@ -191,7 +191,7 @@
 
 <style>
     .page-container {
-        padding: 1.5rem;
+        padding: 0;
     }
 
     .quick-tip-card {
